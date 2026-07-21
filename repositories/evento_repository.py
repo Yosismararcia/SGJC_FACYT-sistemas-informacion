@@ -64,23 +64,65 @@ def obtener_proximos_eventos(limite=5):
         conexion.close()
 
 
-def obtener_eventos_cartelera_publica():
-    """Retorna los eventos aprobados para la cartelera de inscripciones públicas."""
+#------------------NUEVA MODIFICACION
+def obtener_eventos_cartelera_publica(usuario_id=None):
+    """
+    Retorna los eventos aprobados para la cartelera pública con:
+    - Nombre del espacio.
+    - Total de estudiantes inscritos y capacidad máxima.
+    - Enlace virtual.
+    - Estado de inscripción del usuario actual (si inició sesión).
+    """
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
+            # Usamos %s para el LEFT JOIN de inscripción del usuario activo
             cursor.execute("""
-                SELECT e.id, e.titulo, e.tipo_actividad, e.fecha, e.hora_inicio, e.hora_fin, 
-                       esp.nombre AS espacio, esp.capacidad, u.nombre AS responsable
+                SELECT 
+                    e.id, 
+                    e.titulo, 
+                    e.departamento,
+                    e.tipo_actividad, 
+                    e.fecha, 
+                    e.hora_inicio, 
+                    e.hora_fin, 
+                    e.enlace_virtual,
+                    esp.nombre AS espacio, 
+                    esp.capacidad AS capacidad_maxima, 
+                    u.nombre AS responsable,
+                    -- Cuenta el total de inscritos en este evento
+                    (SELECT COUNT(*) FROM inscripciones i WHERE i.evento_id = e.id) AS total_inscritos,
+                    -- Retorna > 0 si el usuario que está viendo la página ya está inscrito
+                    (SELECT COUNT(*) FROM inscripciones i WHERE i.evento_id = e.id AND i.usuario_id = %s) AS esta_inscrito
                 FROM eventos e
                 LEFT JOIN espacios esp ON e.espacio_id = esp.id
                 LEFT JOIN usuarios u ON e.responsable_id = u.id
                 WHERE e.estado IN ('aprobado', 'programado')
                 ORDER BY e.fecha ASC;
-            """)
+            """, (usuario_id,))
+            
             return cursor.fetchall()
     finally:
         conexion.close()
+#---------------------------------------------
+
+#def obtener_eventos_cartelera_publica():
+#    """Retorna los eventos aprobados para la cartelera de inscripciones públicas."""
+ #   conexion = obtener_conexion()
+  #  try:
+   #     with conexion.cursor() as cursor:
+    #        cursor.execute("""
+            #    SELECT e.id, e.titulo, e.tipo_actividad, e.fecha, e.hora_inicio, e.hora_fin, 
+     #                  esp.nombre AS espacio, esp.capacidad, u.nombre AS responsable
+    #            FROM eventos e
+      #          LEFT JOIN espacios esp ON e.espacio_id = esp.id
+       #         LEFT JOIN usuarios u ON e.responsable_id = u.id
+        #        WHERE e.estado IN ('aprobado', 'programado')
+         #       ORDER BY e.fecha ASC;
+          #  """)
+           # return cursor.fetchall()
+    #finally:
+     #   conexion.close()
 
 
 def verificar_conflicto_horario(espacio_id, fecha, hora_inicio, hora_fin, evento_id_excluir=None):
@@ -110,9 +152,10 @@ def verificar_conflicto_horario(espacio_id, fecha, hora_inicio, hora_fin, evento
         conexion.close()
 
 
-def crear_solicitud_evento(titulo, responsable_id, tipo_actividad, espacio_id, fecha, hora_inicio, hora_fin):
-    """Inserta una solicitud formal de evento en espera de aprobación."""
-    # Validación anti-colisión en Python
+def crear_solicitud_evento(titulo, responsable_id, tipo_actividad, espacio_id, fecha, hora_inicio, hora_fin, departamento, enlace_virtual=""):
+    """Inserta una solicitud formal de evento en espera de aprobación incluyendo departamento y enlace virtual opcional."""
+    
+    # 1. Validación anti-colisión previa en Python
     conflicto = verificar_conflicto_horario(espacio_id, fecha, hora_inicio, hora_fin)
     if conflicto:
         return {
@@ -120,20 +163,36 @@ def crear_solicitud_evento(titulo, responsable_id, tipo_actividad, espacio_id, f
             "mensaje": f"⚠️ El espacio ya está reservado en ese horario por '{conflicto['titulo']}'."
         }
 
+    # 2. Limpieza estricta de datos de texto
     titulo_limpio = clean_input_strict(titulo)
+    departamento_limpio = clean_input_strict(departamento)
+    
     conexion = obtener_conexion()
     try:
         with conexion.cursor() as cursor:
+            # 3. Consulta SQL con los nuevos campos de la FaCyT
             cursor.execute("""
-                INSERT INTO eventos (titulo, responsable_id, tipo_actividad, fecha, hora_inicio, hora_fin, estado, espacio_id)
-                VALUES (%s, %s, %s, %s, %s, %s, 'pendiente', %s);
-            """, (titulo_limpio, responsable_id, tipo_actividad, fecha, hora_inicio, hora_fin, espacio_id))
+                INSERT INTO eventos (titulo, departamento, tipo_actividad, fecha, hora_inicio, hora_fin, estado, espacio_id, enlace_virtual, responsable_id)
+                VALUES (%s, %s, %s, %s, %s, %s, 'pendiente', %s, %s, %s);
+            """, (
+                titulo_limpio, 
+                departamento_limpio, 
+                tipo_actividad, 
+                fecha, 
+                hora_inicio, 
+                hora_fin, 
+                espacio_id, 
+                enlace_virtual, 
+                responsable_id
+            ))
         conexion.commit()
         return {"exito": True, "mensaje": "Solicitud creada exitosamente."}
+        
     except pymysql.MySQLError as e:
         if e.args[0] == 45000:
             return {"exito": False, "mensaje": e.args[1]}
         return {"exito": False, "mensaje": f"Error de base de datos: {e}"}
+        
     finally:
         conexion.close()
 

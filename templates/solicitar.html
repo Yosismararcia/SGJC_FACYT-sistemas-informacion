@@ -6,43 +6,67 @@
 <article>
     <header>
         <h2>Solicitud de Nuevo Evento Científico 📝</h2>
-        <p>Complete los datos para proponer una jornada, congreso o actividad académica.</p>
+        <p>Complete los datos para proponer una jornada, congreso o actividad académica en la FaCyT.</p>
     </header>
 
     <form action="/solicitar" method="POST">
         
+        <!-- 1. Título de la Actividad -->
         <label for="titulo">Título de la Actividad:</label>
-        <input type="text" id="titulo" name="titulo" placeholder="Ej. Simposio de Inteligencia Artificial Aplicada" required>
+        <input type="text" id="titulo" name="titulo" placeholder="Ej. Muestra de Proyectos de Software / Simposio de Biotecnología" required>
 
+        <!-- 2. Departamento y Tipo de Actividad Adaptados a la FaCyT -->
         <div class="grid">
+            <div>
+                <label for="departamento">Departamento / Organización:</label>
+                <select id="departamento" name="departamento" required>
+                    <option value="" disabled selected>Seleccione Departamento...</option>
+                    <option value="Computación">💻 Depto. de Computación</option>
+                    <option value="Biología">🧬 Depto. de Biología</option>
+                    <option value="Química">🧪 Depto. de Química</option>
+                    <option value="Física">⚛️ Depto. de Física</option>
+                    <option value="Matemática">📐 Depto. de Matemática</option>
+                    <option value="Capítulo Estudiantil / Extensión">🎓 Capítulo Estudiantil / Extensión</option>
+                    <option value="Decanato">🏛️ Decanato / Institucional</option>
+                </select>
+            </div>
+
             <div>
                 <label for="tipo_actividad">Tipo de Actividad:</label>
                 <select id="tipo_actividad" name="tipo_actividad" required>
                     <option value="" disabled selected>Seleccione una opción...</option>
-                    <option value="Congreso">Congreso</option>
-                    <option value="Jornada de Investigación">Jornada de Investigación</option>
-                    <option value="Conferencia">Conferencia</option>
-                    <option value="Taller">Taller</option>
-                </select>
-            </div>
-            
-            <div>
-                <label for="espacio_id">Espacio Físico Solicitado:</label>
-                <select id="espacio_id" name="espacio_id" required>
-                    <option value="" disabled selected>Seleccione el lugar...</option>
-                    {% for espacio in espacios %}
-                        <option value="{{ espacio.id }}">{{ espacio.nombre }} (Capacidad: {{ espacio.capacidad }})</option>
-                    {% endfor %}
+                    <option value="Muestra de Proyectos de Software">💻 Muestra de Proyectos de Software</option>
+                    <option value="Exposición de Pósteres Científicos">📊 Exposición de Pósteres / Carteles</option>
+                    <option value="Seminario / Webinar Virtual">🌐 Seminario / Webinar Virtual</option>
+                    <option value="Jornada de Iniciación a la Investigación">🔬 Jornada de Iniciación a la Investigación</option>
+                    <option value="Workshop / Taller Práctico">🛠️ Workshop / Taller Práctico</option>
+                    <option value="Conferencia / Simposio">🎙️ Conferencia / Simposio Temático</option>
                 </select>
             </div>
         </div>
 
+        <!-- 3. Selección de Espacio Físico o Virtual -->
+        <label for="espacio_id">Espacio Físico o Modalidad Solicitada:</label>
+        <select id="espacio_id" name="espacio_id" onchange="toggleEnlaceVirtual()" required>
+            <option value="" disabled selected>Seleccione el lugar...</option>
+            {% for espacio in espacios %}
+                <option value="{{ espacio.id }}">{{ espacio.nombre }} (Capacidad: {{ espacio.capacidad }})</option>
+            {% endfor %}
+        </select>
+
+        <!-- Campo Dinámico: Enlace Virtual (Se activa si eligen opción virtual) -->
+        <div id="div_enlace_virtual" style="display: none; margin-bottom: 1rem;">
+            <label for="enlace_virtual">🔗 Enlace de la Reunión (Google Meet / Zoom):</label>
+            <input type="url" id="enlace_virtual" name="enlace_virtual" placeholder="https://meet.google.com/abc-defg-hij">
+            <small>Enlace público para la transmisión en vivo o reunión virtual.</small>
+        </div>
+
+        <!-- 4. Fecha y Horarios -->
         <div class="grid">
             <div>
                 <label for="fecha">Fecha del Evento:</label>
                 <input type="date" id="fecha" name="fecha" required>
             </div>
-            
             <div>
                 <label for="hora_inicio">Hora de Inicio:</label>
                 <input type="time" id="hora_inicio" name="hora_inicio" required>
@@ -57,4 +81,19 @@
         <input type="submit" value="Enviar Solicitud de Evento" class="primary">
     </form>
 </article>
+
+<!-- Script para detectar selección de modalidad virtual sin romper la estructura -->
+<script>
+function toggleEnlaceVirtual() {
+    var selectEspacio = document.getElementById('espacio_id');
+    var divVirtual = document.getElementById('div_enlace_virtual');
+    var selectedText = selectEspacio.options[selectEspacio.selectedIndex].text.toLowerCase();
+
+    if (selectedText.includes('virtual') || selectedText.includes('meet') || selectedText.includes('zoom')) {
+        divVirtual.style.display = 'block';
+    } else {
+        divVirtual.style.display = 'none';
+    }
+}
+</script>
 {% endblock %}

@@ -6,9 +6,9 @@ from datetime import datetime
 # 1. Importación de Repositorios (Consolidados)
 import repositories.evento_repository as evento_repo
 import repositories.usuario_repository as usuario_repo
-import repositories.inscripcion_repository as inscripcion_repo
+#import repositories.inscripcion_repository as inscripcion_repo
 from database import obtener_conexion
-
+from repositories.inscripcion_repository import registrar_inscripcion_segura
 # 2. Importación de Módulos Core y Seguridad
 from core.security import (
     hash_password, 
@@ -38,30 +38,42 @@ def inicio():
             anonimo=True, 
             metrics={}, 
             eventos=[], 
-            eventos_cartelera=[]
+            eventos_cartelera=[],
+            eventos_inscritos_ids=[]
         )
     
     # SI HAY SESIÓN INICIADA: Cargar métricas/estadísticos y datos del sistema
+    usuario_id = session['usuario_id']
+    
     try:
-        eventos_inscritos_ids = []
-        eventos_inscritos_ids = evento_repo.obtener_eventos_por_usuario(session['usuario_id'])
-        
+        # Obtener lista de IDs de eventos en los que el usuario ya está inscrito
+        eventos_inscritos_raw = evento_repo.obtener_eventos_por_usuario(usuario_id)
+        # Nos aseguramos de extraer solo los IDs por si la función devuelve diccionarios o tuplas
+        eventos_inscritos_ids = [
+            ev['id'] if isinstance(ev, dict) else (ev[0] if isinstance(ev, (tuple, list)) else ev)
+            for ev in eventos_inscritos_raw
+        ] if eventos_inscritos_raw else []
+
         metrics = evento_repo.obtener_metricas_dashboard()  
-        eventos_proximos = evento_repo.obtener_proximos_eventos()
-        eventos_cartelera = evento_repo.obtener_eventos_cartelera_publica()
+        
+        # Le pasamos el usuario_id a la consulta para que devuelva 'espacio', 'capacidad' y 'enlace_virtual'
+        eventos_proximos = evento_repo.obtener_proximos_eventos(usuario_id) if hasattr(evento_repo, 'obtener_proximos_eventos') else []
+        eventos_cartelera = evento_repo.obtener_eventos_cartelera_publica(usuario_id) if hasattr(evento_repo, 'obtener_eventos_cartelera_publica') else []
+
     except Exception as e:
         print(f"Error al cargar métricas del inicio: {e}")
         metrics = {}
         eventos_proximos = []
         eventos_cartelera = []
+        eventos_inscritos_ids = []
         
     return render_template(
         'index.html', 
         metrics=metrics, 
-        eventos=eventos_proximos, 
+        eventos=eventos_proximos or eventos_cartelera, # Si usas 'eventos' en index.html
         eventos_cartelera=eventos_cartelera, 
         eventos_inscritos_ids=eventos_inscritos_ids,
-        anonimo=('usuario_id' not in session)
+        anonimo=False
     )
 
 # --- RUTA 2: REGISTRO DE USUARIOS CON VALIDACIÓN INSTITUCIONAL ---
@@ -175,31 +187,30 @@ def redefinir_password(token):
 def solicitar():
     if request.method == 'POST':
         titulo = request.form.get('titulo')
+        departamento = request.form.get('departamento') # <--- NUEVO CAMPO AÑADIDO
         tipo_actividad = request.form.get('tipo_actividad')
         espacio_id = request.form.get('espacio_id')
+        enlace_virtual = request.form.get('enlace_virtual', '') # <--- NUEVO CAMPO AÑADIDO (Opcional)
         fecha = request.form.get('fecha')
         hora_inicio = request.form.get('hora_inicio')
         hora_fin = request.form.get('hora_fin')
-        # 1. Validar que ningún campo obligatorio venga vacío
-        if not all([titulo, tipo_actividad, espacio_id, fecha, hora_inicio, hora_fin]):
+        
+        # 1. Validar que ningún campo obligatorio venga vacío (incluyendo departamento)
+        if not all([titulo, departamento, tipo_actividad, espacio_id, fecha, hora_inicio, hora_fin]):
             flash("❌ Por favor complete todos los campos requeridos.", "error")
             return redirect(url_for('solicitar'))
 
-        # 1. Obtener datos del formulario (son de tipo 'str' o 'None')
-        hora_inicio = request.form.get('hora_inicio')
-        hora_fin = request.form.get('hora_fin')
-
-        # 2. Verificar que no vengan vacíos (satisface a Pylance y evita crashes)
+        # 2. Verificar que los horarios no vengan vacíos (satisface a Pylance y evita crashes)
         if not hora_inicio or not hora_fin:
             flash("❌ Por favor especifique los horarios de inicio y fin.", "error")
             return redirect(url_for('solicitar'))
 
         try:
-            # 3. Convertir a objetos 'time' (aquí usas t_inicio y t_fin)
+            # 3. Convertir a objetos 'time' para validar lógica de tiempo
             t_inicio = datetime.strptime(hora_inicio, "%H:%M").time()
             t_fin = datetime.strptime(hora_fin, "%H:%M").time()
 
-            # 4. USO DE t_inicio Y t_fin: Validar que no comience después de terminar
+            # 4. Validar que no comience después de terminar
             if t_inicio >= t_fin:
                 flash("❌ La hora de inicio debe ser anterior a la hora de finalización.", "error")
                 return redirect(url_for('solicitar'))
@@ -208,14 +219,14 @@ def solicitar():
             flash("❌ Formato de hora inválido.", "error")
             return redirect(url_for('solicitar'))
 
-        # 3. Caso de Borde: Evitar duplicados por título
+        # 5. Caso de Borde: Evitar duplicados por título
         if validar_evento_duplicado(titulo):
             flash(f"❌ Error: Ya existe un evento registrado o en revisión con el título '{titulo}'.", "error")
             return redirect(url_for('solicitar'))
 
-        # 4. Crear la solicitud delegando en el Repositorio de Eventos
+        # 6. Crear la solicitud delegando en el Repositorio de Eventos (pasando departamento y enlace_virtual)
         resultado = evento_repo.crear_solicitud_evento(
-            titulo, session['usuario_id'], tipo_actividad, espacio_id, fecha, hora_inicio, hora_fin
+            titulo, session['usuario_id'], tipo_actividad, espacio_id, fecha, hora_inicio, hora_fin, departamento, enlace_virtual
         )
 
         if resultado.get('exito'):
@@ -226,7 +237,6 @@ def solicitar():
 
     espacios = evento_repo.obtener_lista_espacios_formulario()
     return render_template('solicitar.html', espacios=espacios)
-
 
 # --- RUTA 6: PANEL ADMINISTRATIVO PRIVILEGIADO ---
 @app.route('/admin')
@@ -436,6 +446,29 @@ def inscribir_evento(evento_id):
         return redirect(url_for('login'))
 
     usuario_id = session['usuario_id']
+
+    # Llamada limpia usando únicamente usuario_id
+    resultado = registrar_inscripcion_segura(evento_id, usuario_id)
+
+    status = resultado.get('status', 'error')
+    mensaje = str(resultado.get('message', 'Ocurrió un error inesperado.'))
+
+    if status == 'success':
+        flash(mensaje, "success")
+    elif status == 'warning':
+        flash(mensaje, "warning")
+    else:
+        flash(f"❌ {mensaje}", "error")
+
+    return redirect(request.referrer or url_for('inicio'))
+
+"""@app.route('/inscribir-evento/<int:evento_id>', methods=['POST'])
+def inscribir_evento(evento_id):
+    if 'usuario_id' not in session:
+        flash("Debe iniciar sesión para inscribirse a los eventos.", "warning")
+        return redirect(url_for('login'))
+
+    usuario_id = session['usuario_id']
     exito, mensaje = evento_repo.inscribir_usuario_evento(usuario_id, evento_id)
 
     if exito:
@@ -444,7 +477,7 @@ def inscribir_evento(evento_id):
         flash(f"⚠️ {mensaje}", "error")
 
     return redirect(request.referrer or url_for('dashboard'))
-
+"""
 # -------------------------------------------------------------
 # 👨‍🏫 VISTA PROFESOR: Ver sus eventos y la lista de inscritos
 # -------------------------------------------------------------
