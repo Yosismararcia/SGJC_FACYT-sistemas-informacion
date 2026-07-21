@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Recuperar Acceso - FaCyT{% endblock %}
+
+{% block content %}
+<article style="max-width: 500px; margin: 0 auto;">
+    <header>
+        <h3 style="text-align: center;">Recuperar Acceso al Sistema 🔑</h3>
+    </header>
+    
+    <form action="/recuperar-acceso" method="POST">
+        <label for="cedula">Cédula de Identidad:</label>
+        <input type="text" id="cedula" name="cedula" placeholder="V-12345678" required>
+
+        <label for="correo">Correo Electrónico Institucional:</label>
+        <input type="email" id="correo" name="correo" placeholder="usuario@uc.edu.ve" required>
+
+        <input type="submit" value="Verificar Datos" class="primary">
+    </form>
+    
+    <footer style="text-align: center; margin-top: 1rem;">
+        <p><a href="/login">Volver al inicio de sesión</a></p>
+    </footer>
+</article>
+{% endblock %}

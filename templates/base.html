@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SGJC-FaCyT{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        /* Ajustes globales de espaciado */
+        body { 
+            padding-top: 10px; 
+        }
+        main.container {
+            padding-top: 0 !important;
+            margin-top: 10px;
+        }
+        footer { 
+            margin-top: 40px; 
+            text-align: center; 
+            font-size: 0.9rem; 
+            color: #888; 
+        }
+        .msg-flash { 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            border-radius: 6px; 
+            list-style: none; 
+        }
+        .msg-success { background-color: #1e4620; color: #a3e635; border: 1px solid #2d6a30; }
+        .msg-error { background-color: #5c1d24; color: #fca5a5; border: 1px solid #842029; }
+        
+        /* Layout Grid alineado al tope */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            align-items: stretch; /* Mantiene la misma alineación de altura */
+        }
+
+        /* Remueve el margen superior de la columna principal para subir el formulario */
+        .main-content {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        .main-content > article:first-child,
+        .main-content > form:first-child,
+        .main-content > h2:first-child {
+            margin-top: 0 !important;
+        }
+
+        @media (max-width: 768px) {
+            .app-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Tarjetas Personalizadas del Sidebar */
+        .sidebar-card {
+            background-color: var(--card-background-color);
+            border: 1px solid var(--border-color, #333);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-card header {
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color, #333);
+            font-size: 0.95rem;
+        }
+
+        /* Widget Reloj */
+        .clock-container {
+            text-align: center;
+            padding: 4px 0;
+        }
+
+        .clock-box {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #38bdf8;
+            letter-spacing: 1.5px;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .date-box {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .calendar-box {
+            width: 100%;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="container">
+        <ul>
+            <li><strong>🔬 SGJC - FaCyT</strong></li>
+        </ul>
+        <ul>
+            {% if not session.get('usuario_id') %}
+                <li><a href="/login" role="button">Iniciar Sesión</a></li>
+            {% else %}
+                <!-- ENLACE COMÚN PARA VER LAS ESTADÍSTICAS -->
+                <li><a href="{{ url_for('inicio') }}">📊 Inicio / Métricas</a></li>
+
+                {% if session.get('usuario_rol') in ['administrative', 'administrativo'] %}
+                    <li><a href="/admin">🛠️ Panel Admin</a></li>
+                    <li><a href="/admin/espacios">🏢 Espacios</a></li>
+                {% endif %}
+
+                {% if session.get('usuario_rol') in ['estudiante', 'student'] %}
+                    <li><a href="/proponer">💡 Proponer Evento</a></li>
+                    <li><a href="/mis_propuestas">📋 Mis Propuestas</a></li>
+                {% endif %}
+                
+                {% if session.get('usuario_rol') not in ['estudiante', 'student'] %}
+                    <li><a href="/solicitar">➕ Registrar Evento</a></li>
+                    <li><a href="/mis_solicitudes">📁 Mis Solicitudes</a></li>
+                {% endif %}
+
+                <li><a href="/logout" class="secondary">Cerrar Sesión</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="container">
+        
+        <!-- MENSAJES FLASH -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="msg-flash msg-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- CONTENEDOR UNIFICADO -->
+        <div class="{% if session.get('usuario_id') %}app-layout{% endif %}">
+            
+            {% if session.get('usuario_id') %}
+            <!-- BARRA LATERAL (SIDEBAR) -->
+            <aside class="sidebar">
+                
+                <!-- 1. Perfil Activo -->
+                <div class="sidebar-card">
+                    <header>
+                        <strong>👤 Perfil Activo</strong>
+                    </header>
+                    <p style="margin-bottom: 8px; font-size: 0.95rem;">
+                        <small style="color: #94a3b8;">Usuario:</small><br>
+                        <strong>{{ session.get('usuario_nombre', 'Usuario') }}</strong>
+                    </p>
+                    <p style="margin-bottom: 0; font-size: 0.95rem;">
+                        <small style="color: #94a3b8;">Rol:</small><br>
+                        <mark style="text-transform: capitalize; padding: 2px 8px; font-size: 0.85rem;">
+                            {{ session.get('usuario_rol', 'Invitado') }}
+                        </mark>
+                    </p>
+                </div>
+
+                <!-- 2. Reloj -->
+                <div class="sidebar-card">
+                    <header style="text-align: center;">
+                        <strong>🕒 Hora del Sistema</strong>
+                    </header>
+                    <div class="clock-container">
+                        <div id="live-clock" class="clock-box">00:00:00</div>
+                        <div id="live-date" class="date-box">--/--/----</div>
+                    </div>
+                </div>
+
+                <!-- 3. Calendario -->
+                <div class="sidebar-card">
+                    <header>
+                        <strong>📅 Calendario</strong>
+                    </header>
+                    <input type="date" id="sidebar-calendar" class="calendar-box">
+                </div>
+
+            </aside>
+            {% endif %}
+
+            <!-- SECCIÓN DEL BLOQUE ÚNICO (Para vistas públicas y privadas) -->
+            <section class="main-content">
+                {% block content %}{% endblock %}
+            </section>
+
+        </div>
+
+    </main>
+
+    <footer class="container">
+        <small>© 2026 Facultad Experimental de Ciencias y Tecnología (FaCyT-UC) | Control de Espacios Científicos</small>
+    </footer>
+
+    <!-- SCRIPT DEL RELOJ Y CALENDARIO -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const clockElement = document.getElementById('live-clock');
+            if (clockElement) clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const dateElement = document.getElementById('live-date');
+            if (dateElement) dateElement.textContent = `${day}/${month}/${year}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            const today = new Date().toISOString().split('T')[0];
+            const calendarInput = document.getElementById('sidebar-calendar');
+            if (calendarInput) calendarInput.value = today;
+        });
+    </script>
+</body>
+</html>

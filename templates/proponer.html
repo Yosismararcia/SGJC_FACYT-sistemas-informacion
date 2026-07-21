@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Proponer Evento - FaCyT{% endblock %}
+
+{% block content %}
+<h2>Proponer Iniciativa o Evento 💡</h2>
+<p>Envía tu propuesta de actividad académica, taller o charla para ser evaluada por la coordinación.</p>
+
+<form action="{{ url_for('proponer') }}" method="POST" style="max-width: 600px;">
+    <div style="margin-bottom: 15px;">
+        <label for="titulo"><strong>Título de la Idea / Propuesta:</strong></label>
+        <input type="text" id="titulo" name="titulo" required placeholder="Ej: Taller de Introducción a Python">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="tipo_actividad"><strong>Tipo de Actividad:</strong></label>
+        <select id="tipo_actividad" name="tipo_actividad" required>
+            <option value="" disabled selected>Seleccione una opción</option>
+            <option value="Conferencia">Conferencia</option>
+            <option value="Taller">Taller / Workshop</option>
+            <option value="Seminario">Seminario</option>
+            <option value="Charla Informactiva">Charla Informativa</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <label for="descripcion"><strong>Descripción / Justificación Técnica:</strong></label>
+        <textarea id="descripcion" name="descripcion" rows="5" required placeholder="Explica de qué trata la actividad y a quién va dirigida..."></textarea>
+    </div>
+
+    <button type="submit" class="primary">Enviar Propuesta</button>
+    <a href="{{ url_for('inicio') }}" class="button secondary">Cancelar</a>
+</form>
+{% endblock %}

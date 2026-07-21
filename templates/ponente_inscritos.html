@@ -1,0 +1,70 @@
+{% extends 'base.html' if bootstrap else 'layout.html' %} 
+{# Nota: Si usas otra plantilla base, ajusta el extends según tu proyecto #}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Encabezado con datos del Evento -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>📋 Participantes Inscritos</h2>
+            <h5 class="text-muted">Evento: <strong>{{ evento.titulo }}</strong></h5>
+        </div>
+        <a href="{{ url_for('mis_solicitudes') }}" class="btn btn-outline-secondary">
+            ⬅️ Volver a mis solicitudes
+        </a>
+    </div>
+
+    <!-- Tarjeta Informativa del Evento -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6><strong>📅 Fecha:</strong> {{ evento.fecha }}</h6>
+                    <h6><strong>⏰ Horario:</strong> {{ evento.hora_inicio }} - {{ evento.hora_fin }}</h6>
+                    <h6><strong>📍 Espacio:</strong> {{ evento.espacio_nombre or 'Por definir' }}</h6>
+                    <h6><strong>👥 Total Inscritos:</strong> <span class="badge bg-primary fs-6">{{ total_inscritos }}</span></h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Participantes -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Lista de Asistencia</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if inscritos %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre Completo</th>
+                                <th>Cédula</th>
+                                <th>Correo Electrónico</th>
+                                <th>Fecha de Inscripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for estudiante in inscritos %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ estudiante.nombre }}</strong></td>
+                                <td>{{ estudiante.cedula or 'N/A' }}</td>
+                                <td>{{ estudiante.correo }}</td>
+                                <td>{{ estudiante.fecha_inscripcion or 'Registrado' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4 text-center text-muted">
+                    <h5>📌 Aún no hay participantes inscritos en este evento.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

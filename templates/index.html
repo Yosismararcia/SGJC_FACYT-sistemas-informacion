@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - SGJC FaCyT{% endblock %}
+
+{% block content %}
+
+{% if anonimo %}
+    <!-- ========================================== -->
+    <!-- VISTA PARA USUARIOS NO AUTENTICADOS        -->
+    <!-- ========================================== -->
+    <article style="text-align: center; padding: 40px 20px;">
+        <h2>🏛️ Sistema de Gestión de Jornadas Científicas (SGJC)</h2>
+        <p style="font-size: 1.1rem; color: #555; max-width: 700px; margin: 0 auto 30px auto;">
+            Bienvenido al portal institucional de la Facultad Experimental de Ciencias y Tecnología (FaCyT - UC). 
+            Para consultar la disponibilidad de espacios, registrar ponencias o realizar propuestas de eventos, por favor ingresa con tus credenciales.
+        </p>
+        <div>
+            <a href="{{ url_for('login') }}" role="button" style="padding: 12px 30px;">🔑 Iniciar Sesión</a>
+            <a href="{{ url_for('registro') }}" role="button" class="secondary" style="padding: 12px 30px; margin-left: 10px;">📝 Registrarse</a>
+        </div>
+    </article>
+
+{% else %}
+    <!-- ========================================== -->
+    <!-- VISTA PARA USUARIOS AUTENTICADOS           -->
+    <!-- ========================================== -->
+    <h2>📊 Estadísticas del Sistema</h2>
+
+    <!-- TARJETAS DE ESTADÍSTICAS / MÉTRICAS -->
+    <div class="grid" style="margin-bottom: 30px;">
+        <article style="text-align: center; padding: 15px;">
+            <small>📅 Eventos Totales</small>
+            <h3 style="margin: 0; color: var(--primary);">{{ metrics.get('totales', 0) }}</h3>
+        </article>
+        
+        <article style="text-align: center; padding: 15px;">
+            <small>⏳ En Revisión</small>
+            <h3 style="margin: 0; color: #e67e22;">{{ metrics.get('pendientes', 0) }}</h3>
+        </article>
+
+        <article style="text-align: center; padding: 15px;">
+            <small>✅ Aprobados</small>
+            <h3 style="margin: 0; color: #27ae60;">{{ metrics.get('aprobados', 0) }}</h3>
+        </article>
+
+        <article style="text-align: center; padding: 15px;">
+            <small>💡 Ideas/Propuestas</small>
+            <h3 style="margin: 0; color: #2980b9;">{{ metrics.get('propuestas', 0) }}</h3>
+        </article>
+    </div>
+
+    <!-- CARTELERA Y PRÓXIMOS EVENTOS -->
+    <section>
+        <h3>📌 Próximas Actividades Aprobadas</h3>
+        {% if eventos %}
+            <div class="grid">
+                {% for ev in eventos %}
+                    <article style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <header><strong>{{ ev.titulo }}</strong></header>
+                            <p><small>📍 Espacio: {{ ev.espacio_nombre }}</small></p>
+                            <p><small>🗓 Fecha: {{ ev.fecha }} | 🕒 {{ ev.hora_inicio }} - {{ ev.hora_fin }}</small></p>
+                        </div>
+                        
+                        <footer style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                            <!-- En index.html, dentro del loop de eventos -->
+                            {% if session.get('rol') in ['profesor', 'ponente', 'admin'] %}
+                                <a href="{{ url_for('ver_inscritos_evento', evento_id=ev.id) }}" 
+                                class="button outline" 
+                                style="width: 100%; text-align: center; margin-top: 5px;">
+                                    👥 Ver Lista de Inscritos
+                                </a>
+                            {% endif %}
+                            
+                            <!-- NUEVA FUNCIONALIDAD: Formulario y Botón de Inscripción -->
+                            <form action="{{ url_for('inscribir_evento', evento_id=ev.id) }}" method="POST" style="margin: 0;">
+                                {% if eventos_inscritos_ids is defined and ev.id in eventos_inscritos_ids %}
+                                    <button type="button" class="secondary" disabled style="width: 100%; text-align: center; margin: 0;">
+                                        ✓ Ya estás inscrito
+                                    </button>
+                                {% else %}
+                                    <button type="submit" style="width: 100%; text-align: center; margin: 0;">
+                                        ✍️ Inscribirme al Evento
+                                    </button>
+                                {% endif %}
+                            </form>
+                            
+                                <!-- Mantiene el botón original para ver la Ficha -->
+                            {% if session.get('rol') in ['profesor', 'ponente', 'admin'] %}
+                                <a href="{{ url_for('difundir_evento', evento_id=ev.id) }}" class="button contrast outline" style="width: 100%; text-align: center;">Ver Ficha de Difusión</a>
+                            {% endif %}
+                        </footer>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p><em>No hay eventos programados en este momento.</em></p>
+        {% endif %}
+    </section>
+
+{% endif %}
+
+{% endblock %}

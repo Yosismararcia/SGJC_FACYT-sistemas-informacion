@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro Institucional - FaCyT{% endblock %}
+
+{% block content %}
+<article style="max-width: 500px; margin: 0 auto;">
+    <header>
+        <h2>Registro Único FaCyT 🎓</h2>
+        <p>Introduzca sus datos. Las cuentas de personal serán validadas contra la base de datos institucional.</p>
+    </header>
+
+    <form action="/registro" method="POST">
+        <label for="nombre">Nombre Completo:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Pérez" required>
+
+        <label for="cedula">Cédula de Identidad:</label>
+        <input type="text" id="cedula" name="cedula" placeholder="Ej. V-12345678" required>
+
+        <label for="correo">Correo Electrónico:</label>
+        <input type="email" id="correo" name="correo" placeholder="usuario@uc.edu.ve" required>
+
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="rol">Tipo de Usuario (Rol):</label>
+        <select id="rol" name="rol" required>
+            <option value="estudiante">Estudiante / Usuario General</option>
+            <option value="ponente">Ponente / Profesor Responsable</option>
+            <option value="administrativo">Personal Administrativo</option>
+        </select>
+
+        <button type="submit" class="primary">Crear Cuenta</button>
+        <p style="text-align: center; margin-top: 1rem;"><a href="/login">¿Ya tienes cuenta? Inicia sesión aquí</a></p>
+    </form>
+</article>
+{% endblock %}

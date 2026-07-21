@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Solicitudes - FaCyT{% endblock %}
+
+{% block content %}
+<h2>Mis Solicitudes de Eventos 📅</h2>
+<p>Aquí puedes hacer seguimiento al estado de las actividades que has propuesto.</p>
+
+<section>
+    <figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>Título del Evento</th>
+                    <th>Tipo de Actividad</th>
+                    <th>Fecha y Horario</th>
+                    <th>Espacio Físico</th>
+                    <th>Estado Actual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if solicitudes %}
+                    {% for sol in solicitudes %}
+                    <tr>
+                        <td><strong>{{ sol.titulo }}</strong></td>
+                        <td>{{ sol.tipo_actividad }}</td>
+                        <td>{{ sol.fecha }} ({{ sol.hora_inicio }} - {{ sol.hora_fin }})</td>
+                        <td>{{ sol.espacio }}</td>
+                        <td>
+                            <!-- Badges de colores dinámicos según el estado -->
+                            <mark style="
+                                background-color: {{ '#d1e7dd' if sol.estado in ['aprobado', 'programado'] else ('#fff3cd' if sol.estado in ['solicitado', 'en revisión'] else '#f8d7da') }};
+                                color: {{ '#0f5132' if sol.estado in ['aprobado', 'programado'] else ('#664d03' if sol.estado in ['solicitado', 'en revisión'] else '#842029') }};
+                                padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold;
+                            ">
+                                {{ sol.estado | upper }}
+                            </mark>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #888;">
+                            Aún no has realizado ninguna solicitud. 💡 <br>
+                            <a href="/solicitar" class="button" style="margin-top: 1rem;">Solicitar mi primer espacio</a>
+                            
+                            <a href="{{ url_for('ponente_ver_inscritos', evento_id=solicitud.id) }}" class="btn btn-sm btn-info text-white">
+                                👥 Ver Inscritos
+                            </a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </figure>
+</section>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Espacios - SGJC-FaCyT{% endblock %}
+
+{% block content %}
+<h2>🏢 Gestión de Espacios Físicos</h2>
+<p>Administra los salones, laboratorios y auditorios disponibles en la facultad.</p>
+
+<!-- Acordeón para agregar nuevo espacio -->
+<details style="margin-bottom: 30px;">
+    <summary role="button" class="secondary">➕ Registrar Nuevo Espacio</summary>
+    <article style="margin-top: 10px; background-color: #f8f9fa; border: 1px solid #e5e7eb;">
+        <form action="/admin/espacios/nuevo" method="POST" style="margin-bottom: 0;">
+            <div class="grid">
+                <label>
+                    Nombre del Espacio:
+                    <input type="text" name="nombre" placeholder="Ej. Auditorio FaCyT" required>
+                </label>
+                <label>
+                    Capacidad (Personas):
+                    <input type="number" name="capacidad" placeholder="Ej. 120" required>
+                </label>
+            </div>
+            <label>
+                Descripción o Recursos (Opcional):
+                <input type="text" name="descripcion" placeholder="Ej. Proyector, Pizarra acrílica, Aire acondicionado">
+            </label>
+            <button type="submit" style="background-color: #0056b3; border-color: #0056b3; width: auto;">Guardar Espacio</button>
+        </form>
+    </article>
+</details>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 30px;">
+
+<!-- Tabla de espacios existentes -->
+<h3>Lista de Espacios Registrados</h3>
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre y Descripción</th>
+                <th>Capacidad</th>
+                <th>Estado</th>
+                <th style="text-align: center;">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if espacios %}
+                {% for espacio in espacios %}
+                <tr>
+                    <td>
+                        <strong>{{ espacio.nombre }}</strong><br>
+                        <small style="color: #666;">{{ espacio.descripcion }}</small>
+                    </td>
+                    <td>{{ espacio.capacidad }} personas</td>
+                    <td>
+                        <mark style="background-color: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">Activo</mark>
+                    </td>
+                    <td style="text-align: center;">
+                        <form action="/admin/espacios/eliminar/{{ espacio.id }}" method="POST" style="margin: 0;" onsubmit="return confirm('¿Seguro que deseas eliminar este espacio?');">
+                            <button type="submit" style="padding: 4px 10px; font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545; color: white; margin-bottom: 0;" title="Eliminar Espacio">
+                                🗑️
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #888;">No hay espacios físicos registrados en el sistema todavía.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</figure>
+{% endblock %}

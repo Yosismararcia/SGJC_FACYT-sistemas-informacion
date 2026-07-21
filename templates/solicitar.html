@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitar Evento - FaCyT{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h2>Solicitud de Nuevo Evento Científico 📝</h2>
+        <p>Complete los datos para proponer una jornada, congreso o actividad académica.</p>
+    </header>
+
+    <form action="/solicitar" method="POST">
+        
+        <label for="titulo">Título de la Actividad:</label>
+        <input type="text" id="titulo" name="titulo" placeholder="Ej. Simposio de Inteligencia Artificial Aplicada" required>
+
+        <div class="grid">
+            <div>
+                <label for="tipo_actividad">Tipo de Actividad:</label>
+                <select id="tipo_actividad" name="tipo_actividad" required>
+                    <option value="" disabled selected>Seleccione una opción...</option>
+                    <option value="Congreso">Congreso</option>
+                    <option value="Jornada de Investigación">Jornada de Investigación</option>
+                    <option value="Conferencia">Conferencia</option>
+                    <option value="Taller">Taller</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="espacio_id">Espacio Físico Solicitado:</label>
+                <select id="espacio_id" name="espacio_id" required>
+                    <option value="" disabled selected>Seleccione el lugar...</option>
+                    {% for espacio in espacios %}
+                        <option value="{{ espacio.id }}">{{ espacio.nombre }} (Capacidad: {{ espacio.capacidad }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div>
+                <label for="fecha">Fecha del Evento:</label>
+                <input type="date" id="fecha" name="fecha" required>
+            </div>
+            
+            <div>
+                <label for="hora_inicio">Hora de Inicio:</label>
+                <input type="time" id="hora_inicio" name="hora_inicio" required>
+            </div>
+            
+            <div>
+                <label for="hora_fin">Hora de Finalización:</label>
+                <input type="time" id="hora_fin" name="hora_fin" required>
+            </div>
+        </div>
+
+        <input type="submit" value="Enviar Solicitud de Evento" class="primary">
+    </form>
+</article>
+{% endblock %}

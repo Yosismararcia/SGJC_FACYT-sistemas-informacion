@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Inscritos - {{ evento.titulo }}{% endblock %}
+
+{% block content %}
+<article>
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2>📋 Participantes Inscritos</h2>
+            <p><strong>Evento:</strong> {{ evento.titulo }} | 📍 {{ evento.espacio_nombre }}</p>
+        </div>
+        <a href="javascript:history.back()" class="button secondary outline">⬅️ Volver</a>
+    </header>
+
+    <!-- SECCIÓN SOLO PARA ADMINISTRADORES: INSCRIPCIÓN MANUAL -->
+    {% if session.get('rol') == 'admin' %}
+        <details open style="margin-bottom: 25px; border: 1px solid var(--primary); padding: 15px; border-radius: 8px;">
+            <summary><strong>➕ Inscripción Manual de Usuario (Solo Admin)</strong></summary>
+            <form action="{{ url_for('admin_inscribir_manual', evento_id=evento.id) }}" method="POST" style="margin-top: 15px;">
+                <div class="grid">
+                    <div>
+                        <label for="usuario_id">Seleccionar Usuario a Inscribir:</label>
+                        <select name="usuario_id" id="usuario_id" required>
+                            <option value="" disabled selected>-- Elija un usuario registrado --</option>
+                            {% for u in usuarios %}
+                                <option value="{{ u.id }}">{{ u.nombre }} ({{ u.cedula }}) - {{ u.rol|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button type="submit">Inscribir Manualmente</button>
+                    </div>
+                </div>
+            </form>
+        </details>
+    {% endif %}
+
+    <!-- TABLA DE LISTADO DE INSCRITOS -->
+    <h3>Lista de Asistentes (Total: {{ inscritos|length }})</h3>
+    {% if inscritos %}
+        <figure>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre y Apellido</th>
+                        <th>Cédula</th>
+                        <th>Correo Institucional</th>
+                        <th>Rol</th>
+                        <th>Fecha de Inscripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ins in inscritos %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong>{{ ins.nombre }}</strong></td>
+                            <td>{{ ins.cedula }}</td>
+                            <td>{{ ins.correo }}</td>
+                            <td><mark>{{ ins.rol|capitalize }}</mark></td>
+                            <td><small>{{ ins.fecha_inscripcion }}</small></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </figure>
+    {% else %}
+        <p><em>No hay participantes inscritos en este evento todavía.</em></p>
+    {% endif %}
+</article>
+{% endblock %}

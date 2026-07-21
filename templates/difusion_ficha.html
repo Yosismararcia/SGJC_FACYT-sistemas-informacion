@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="max-width: 700px; margin-top: 30px;">
+    <h2>📢 Plantilla de Invitación Generada</h2>
+    <p>Copia el siguiente texto para enviarlo por los canales de difusión oficiales:</p>
+
+    <!-- Cuadro de texto dinámico listo para copiar -->
+    <div style="background-color: #f9f9f9; border-left: 5px solid #003366; padding: 20px; font-family: Arial, sans-serif; white-space: pre-line; line-height: 1.6;">
+        <strong>UNIVERSIDAD DE CARABOBO</strong>
+        FACULTAD DE CIENCIAS Y TECNOLOGÍA (FACYT)
+        
+        <strong>INVITACIÓN</strong>
+        
+        Se invita cordialmente a toda la comunidad universitaria y al público general a participar en el evento denominado: 
+        <strong>"{{ evento.titulo }}"</strong>.
+        
+        <strong>Propósito/Descripción del evento:</strong>
+        {{ evento.descripcion }}
+        
+        🗓️ <strong>Detalles del encuentro:</strong>
+        • <strong>Fecha:</strong> {{ evento.fecha }}
+        • <strong>Hora:</strong> {{ evento.hora }}
+        • <strong>Lugar:</strong> {{ evento.lugar }}
+        
+        Agradecemos de antemano su receptividad y valiosa asistencia, la cual dará el realce institucional necesario a esta actividad académica
+        
+        <em>Atentamente,</em>
+        <strong>Comité Organizador FACYT</strong>
+        
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="/admin" class="button">Volver al Panel</a>
+    </div>
+</div>
+
+<script>
+function copiarFicha() {
+    var copyText = document.getElementById("md-box");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigation.clipboard.writeText(copyText.value);
+    alert("¡Ficha Markdown copiada! Lista para enviar por Telegram o WhatsApp 🚀");
+}
+</script>
+
+{% endblock %}

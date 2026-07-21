@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Control - FaCyT{% endblock %}
+
+{% block content %}
+<h2>Panel de Control Administrativo 🛠</h2>
+<p>Gestión de reservas de espacios físicos y métricas de ocupación en tiempo real.</p>
+
+<div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+    
+    <div style="flex: 1; min-width: 280px; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fafafa;">
+        <h3 style="margin-top: 0; color: #1f2937;">Salones Más Solicitados 🏫</h3>
+        <ul style="padding-left: 20px; margin-bottom: 0;">
+            {% for espacio in top_espacios %}
+                <li><strong>{{ espacio.nombre }}</strong>: {{ espacio.total }} solicitudes</li>
+            {% else %}
+                <li style="color: #888;">No hay datos de ocupación aún.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div style="flex: 1; min-width: 280px; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #fafafa;">
+        <h3 style="margin-top: 0; color: #1f2937;">Resumen del Sistema 📊</h3>
+        <ul style="padding-left: 20px; margin-bottom: 0;">
+            {% for conteo in conteo_estados %}
+                <li>
+                    <span style="text-transform: capitalize;"><strong>{{ conteo.estado }}</strong></span>: {{ conteo.total }} eventos
+                </li>
+            {% else %}
+                <li style="color: #888;">No hay eventos registrados en el sistema.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 30px;">
+
+<h3>Seguimiento y Control de Solicitudes</h3>
+
+<section>
+    <figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>Evento / Solicitante</th>
+                    <th>Tipo</th>
+                    <th>Horario y Salón</th>
+                    <th>Estado</th>
+                    <th style="text-align: center;">Control de Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if solicitudes %}
+                    {% for sol in solicitudes %}
+                    <tr>
+                        <td>
+                            <strong>{{ sol.titulo }}</strong><br>
+                            <small style="color: #666;">Por: {{ sol.solicitado_por }}</small>
+                        </td>
+                        <td>{{ sol.tipo_actividad }}</td>
+                        <td>
+                            <strong>{{ sol.espacio }}</strong><br>
+                            <small>{{ sol.fecha }} ({{ sol.hora_inicio }} - {{ sol.hora_fin }})</small>
+                        </td>
+                        <td>
+                            {% if sol.estado == 'pendiente' %}
+                                <mark style="background-color: #fff3cd; color: #664d03; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">⏳ PENDIENTE</mark>
+                            {% elif sol.estado in ['aprobado', 'programado'] %}
+                                <mark style="background-color: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">✅ {{ sol.estado | upper }}</mark>
+                            {% elif sol.estado == 'completado' %}
+                                <mark style="background-color: #cce5ff; color: #004085; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">🏁 COMPLETADO</mark>
+                            {% else %}
+                                <mark style="background-color: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">❌ {{ sol.estado | upper }}</mark>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            <form action="/admin/actualizar-estado/{{ sol.id }}" method="POST" style="display: inline-flex; gap: 8px; margin: 0; padding: 0; vertical-align: middle;">
+                                <select name="estado" style="margin-bottom: 0; padding: 4px 8px; font-size: 0.85rem;" required>
+                                    <option value="pendiente" {% if sol.estado == 'pendiente' %}selected{% endif %}>⏳ Pendiente</option>
+                                    <option value="aprobado" {% if sol.estado == 'aprobado' %}selected{% endif %}>✅ Aprobado</option>
+                                    <option value="programado" {% if sol.estado == 'programado' %}selected{% endif %}>📅 Programado</option>
+                                    <option value="postergado" {% if sol.estado == 'postergado' %}selected{% endif %}>🔄 Postergado</option>
+                                    <option value="completado" {% if sol.estado == 'completado' %}selected{% endif %}>🏁 Completado</option>
+                                    <option value="rechazado" {% if sol.estado == 'rechazado' %}selected{% endif %}>❌ Rechazado</option>
+                                </select>
+                                <button type="submit" class="primary" style="padding: 4px 12px; margin-bottom: 0; font-size: 0.85rem; background-color: #0056b3; border-color: #0056b3;">
+                                    Guardar
+                                </button>
+                            </form>
+                            
+                            <div style="display: inline-flex; gap: 5px; margin-left: 10px; vertical-align: middle;">
+                                {# BOTÓN DE VER INSCRITOS E INSCRIPCIÓN MANUAL (ADMINISTRADOR Y PROFESORES) #}
+                                <a href="{{ url_for('ver_inscritos_evento', evento_id=sol.id) }}" class="button" 
+                                   style="padding: 4px 10px; font-size: 0.85rem; background-color: #28a745; border-color: #28a745; color: white; margin-bottom: 0;"
+                                   title="Ver Participantes / Inscribir Manualmente">
+                                    👥
+                                </a>
+
+                                {# BOTÓN DE DIFUSIÓN DE EVENTOS (Solo para eventos confirmados) #}
+                                {% if sol.estado in ['aprobado', 'programado'] %}
+                                    <a href="/evento/difundir/{{ sol.id }}" class="button" 
+                                       style="padding: 4px 10px; font-size: 0.85rem; background-color: #17a2b8; border-color: #17a2b8; color: white; margin-bottom: 0;"
+                                       title="Generar Ficha de Difusión">
+                                        📢
+                                    </a>
+                                {% endif %}
+
+                                <a href="/admin/editar-evento/{{ sol.id }}" class="button" 
+                                   style="padding: 4px 10px; font-size: 0.85rem; background-color: #ffc107; border-color: #ffc107; color: #000; margin-bottom: 0;">
+                                    ✏️
+                                </a>
+                                
+                                <form action="/admin/eliminar-evento/{{ sol.id }}" method="POST" style="margin: 0;" 
+                                      onsubmit="return confirm('¿Está completamente seguro de eliminar este evento de forma permanente? Esta acción no se puede deshacer.');">
+                                    <button type="submit" style="padding: 4px 10px; font-size: 0.85rem; background-color: #dc3545; border-color: #dc3545; color: white; margin-bottom: 0;">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #888;">No hay solicitudes registradas en el sistema.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </figure>
+</section>
+
+<hr style="border: 0; border-top: 1px solid #eee; margin-top: 40px; margin-bottom: 30px;">
+
+<h3>💡 Ideas y Propuestas de Estudiantes</h3>
+<p>Revisión interna de iniciativas académicas o científicas sugeridas por el alumnado de la FaCyT-UC para su evaluación.</p>
+
+<section>
+    <figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>Título Sugerido de la Idea</th>
+                    <th>Tipo de Actividad</th>
+                    <th>Justificación / Descripción Técnica</th>
+                    <th>Propuesto por (Estudiante)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if propuestas %}
+                    {% for prop in propuestas %}
+                    <tr>
+                        <td><strong>{{ prop.titulo }}</strong></td>
+                        <td><mark style="background-color: #e2e8f0; color: #4a5568; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">{{ prop.tipo_actividad }}</mark></td>
+                        <td>{{ prop.descripcion }}</td>
+                        <td>👤 {{ prop.estudiante }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #888;">No hay nuevas propuestas estudiantiles pendientes de evaluación.</td>
+                    </tr>
+                {% endif %}
+            </tbody>            
+        </table>
+    </figure>
+</section>
+{% endblock %}
