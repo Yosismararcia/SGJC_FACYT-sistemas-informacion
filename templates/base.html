@@ -4,137 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SGJC-FaCyT{% endblock %}</title>
+    <!-- Pico.css Base -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <!-- FontAwesome para Íconos Atractivos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Ajustes globales de espaciado */
-        body { 
-            padding-top: 10px; 
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
         }
-        main.container {
-            padding-top: 0 !important;
-            margin-top: 10px;
+
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            padding-top: 10px;
         }
-        footer { 
-            margin-top: 40px; 
-            text-align: center; 
-            font-size: 0.9rem; 
-            color: #888; 
+
+        /* NAVEGACIÓN MODERNA Y RESPONSIVA */
+        nav.nav-container {
+            background: #ffffff;
+            padding: 0.8rem 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
         }
-        .msg-flash { 
-            padding: 12px; 
-            margin-bottom: 20px; 
-            border-radius: 6px; 
-            list-style: none; 
-        }
-        .msg-success { background-color: #1e4620; color: #a3e635; border: 1px solid #2d6a30; }
-        .msg-error { background-color: #5c1d24; color: #fca5a5; border: 1px solid #842029; }
         
-        /* Layout Grid alineado al tope */
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .nav-link-custom {
+            font-weight: 600;
+            color: #475569 !important;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link-custom:hover {
+            background: #f1f5f9;
+            color: var(--primary) !important;
+        }
+
+        /* LAYOUT FLEXIBLE Y ADAPTATIVO */
         .app-layout {
             display: grid;
             grid-template-columns: 280px 1fr;
-            gap: 24px;
-            align-items: stretch; /* Mantiene la misma alineación de altura */
+            gap: 20px;
+            align-items: start;
         }
 
-        /* Remueve el margen superior de la columna principal para subir el formulario */
-        .main-content {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
+        /* Ajuste para móviles */
+        @media (max-width: 992px) {
+            .app-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .main-content > article:first-child,
-        .main-content > form:first-child,
-        .main-content > h2:first-child {
-            margin-top: 0 !important;
+        /* TARJETAS Y CONTENEDORES */
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        @media (max-width: 768px) {
-            .app-layout { grid-template-columns: 1fr; }
-        }
-
-        /* Tarjetas Personalizadas del Sidebar */
-        .sidebar-card {
-            background-color: var(--card-background-color);
-            border: 1px solid var(--border-color, #333);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .sidebar-card header {
-            margin-bottom: 12px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid var(--border-color, #333);
-            font-size: 0.95rem;
-        }
-
-        /* Widget Reloj */
-        .clock-container {
-            text-align: center;
-            padding: 4px 0;
-        }
-
-        .clock-box {
-            font-size: 1.6rem;
+        .card-custom header {
             font-weight: 700;
-            color: #38bdf8;
-            letter-spacing: 1.5px;
-            line-height: 1.2;
-            margin-bottom: 4px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        /* TABLAS CON SCROLL HORIZONTAL SEGURA */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        /* INSIGNIAS DE ESTADO (BADGES) */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .badge-aprobado { background: #dcfce7; color: #15803d; }
+        .badge-pendiente { background: #fef9c3; color: #a16207; }
+        .badge-rechazado { background: #fee2e2; color: #b91c1c; }
+        .badge-completado { background: #e0f2fe; color: #0369a1; }
+
+        /* WIDGET RELOJ Y CALENDARIO */
+        .clock-box {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-align: center;
+            letter-spacing: 1px;
         }
 
         .date-box {
-            font-size: 0.85rem;
-            color: #94a3b8;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
             font-weight: 500;
         }
 
-        .calendar-box {
-            width: 100%;
-            margin-bottom: 0;
+        .calendar-status {
+            font-size: 0.8rem;
+            margin-top: 6px;
+            display: block;
+            text-align: center;
+            font-weight: 600;
         }
+
+        /* FLASH MESSAGES */
+        .msg-flash { 
+            padding: 12px 16px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            font-weight: 500;
+        }
+        .msg-success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .msg-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     </style>
 </head>
 <body>
 
     <!-- NAVEGACIÓN -->
-    <nav class="container">
+    <nav class="nav-container container-fluid">
         <ul>
-            <li><strong>🔬 SGJC - FaCyT</strong></li>
+            <li>
+                <span class="nav-brand"><i class="fa-solid fa-atom text-primary"></i> SGJC - FaCyT</span>
+            </li>
         </ul>
         <ul>
-            {% if not session.get('usuario_id') %}
-                <li><a href="/login" role="button">Iniciar Sesión</a></li>
-            {% else %}
-                <!-- ENLACE COMÚN PARA VER LAS ESTADÍSTICAS -->
-                <li><a href="{{ url_for('inicio') }}">📊 Inicio / Métricas</a></li>
+            {% if session.get('usuario_id') %}
+                <li><a href="{{ url_for('inicio') }}" class="nav-link-custom"><i class="fa-solid fa-chart-pie"></i> Inicio / Métricas</a></li>
 
                 {% if session.get('usuario_rol') in ['administrative', 'administrativo'] %}
-                    <li><a href="/admin">🛠️ Panel Admin</a></li>
-                    <li><a href="/admin/espacios">🏢 Espacios</a></li>
+                    <li><a href="/admin" class="nav-link-custom"><i class="fa-solid fa-sliders"></i> Admin</a></li>
+                    <li><a href="/admin/espacios" class="nav-link-custom"><i class="fa-solid fa-building"></i> Espacios</a></li>
                 {% endif %}
 
                 {% if session.get('usuario_rol') in ['estudiante', 'student'] %}
-                    <li><a href="/proponer">💡 Proponer Evento</a></li>
-                    <li><a href="/mis_propuestas">📋 Mis Propuestas</a></li>
+                    <li><a href="/proponer" class="nav-link-custom"><i class="fa-solid fa-lightbulb"></i> Proponer</a></li>
+                    <li><a href="/mis_propuestas" class="nav-link-custom"><i class="fa-solid fa-list-check"></i> Mis Propuestas</a></li>
                 {% endif %}
                 
                 {% if session.get('usuario_rol') not in ['estudiante', 'student'] %}
-                    <li><a href="/solicitar">➕ Registrar Evento</a></li>
-                    <li><a href="/mis_solicitudes">📁 Mis Solicitudes</a></li>
+                    <li><a href="/solicitar" class="nav-link-custom"><i class="fa-solid fa-calendar-plus"></i> Registrar Evento</a></li>
+                    <li><a href="/mis_solicitudes" class="nav-link-custom"><i class="fa-solid fa-folder-open"></i> Mis Solicitudes</a></li>
                 {% endif %}
 
-                <li><a href="/logout" class="secondary">Cerrar Sesión</a></li>
+                <li><a href="/logout" class="outline contrast" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;"><i class="fa-solid fa-right-from-bracket"></i> Salir</a></li>
+            {% else %}
+                <li><a href="/login" role="button"><i class="fa-solid fa-lock"></i> Iniciar Sesión</a></li>
             {% endif %}
         </ul>
     </nav>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="container">
+    <main class="container-fluid" style="padding: 0 1.5rem;">
         
-        <!-- MENSAJES FLASH -->
+        <!-- FLASH MESSAGES -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -143,53 +192,39 @@
             {% endif %}
         {% endwith %}
 
-        <!-- CONTENEDOR UNIFICADO -->
         <div class="{% if session.get('usuario_id') %}app-layout{% endif %}">
             
             {% if session.get('usuario_id') %}
-            <!-- BARRA LATERAL (SIDEBAR) -->
+            <!-- BARRA LATERAL -->
             <aside class="sidebar">
                 
-                <!-- 1. Perfil Activo -->
-                <div class="sidebar-card">
-                    <header>
-                        <strong>👤 Perfil Activo</strong>
-                    </header>
-                    <p style="margin-bottom: 8px; font-size: 0.95rem;">
-                        <small style="color: #94a3b8;">Usuario:</small><br>
-                        <strong>{{ session.get('usuario_nombre', 'Usuario') }}</strong>
-                    </p>
-                    <p style="margin-bottom: 0; font-size: 0.95rem;">
-                        <small style="color: #94a3b8;">Rol:</small><br>
-                        <mark style="text-transform: capitalize; padding: 2px 8px; font-size: 0.85rem;">
-                            {{ session.get('usuario_rol', 'Invitado') }}
-                        </mark>
-                    </p>
+                <!-- Perfil Activo -->
+                <div class="card-custom">
+                    <header><i class="fa-solid fa-user-circle"></i> Perfil Activo</header>
+                    <p style="margin-bottom: 4px; font-size: 0.9rem; color: #64748b;">Usuario:</p>
+                    <p style="font-weight: 700; margin-bottom: 12px; color: #0f172a;">{{ session.get('usuario_nombre', 'Usuario') }}</p>
+                    <p style="margin-bottom: 4px; font-size: 0.9rem; color: #64748b;">Rol:</p>
+                    <span class="badge badge-completado">{{ session.get('usuario_rol', 'Invitado') }}</span>
                 </div>
 
-                <!-- 2. Reloj -->
-                <div class="sidebar-card">
-                    <header style="text-align: center;">
-                        <strong>🕒 Hora del Sistema</strong>
-                    </header>
-                    <div class="clock-container">
-                        <div id="live-clock" class="clock-box">00:00:00</div>
-                        <div id="live-date" class="date-box">--/--/----</div>
-                    </div>
+                <!-- Reloj -->
+                <div class="card-custom">
+                    <header style="text-align: center;"><i class="fa-solid fa-clock"></i> Hora del Sistema</header>
+                    <div id="live-clock" class="clock-box">00:00:00</div>
+                    <div id="live-date" class="date-box">--/--/----</div>
                 </div>
 
-                <!-- 3. Calendario -->
-                <div class="sidebar-card">
-                    <header>
-                        <strong>📅 Calendario</strong>
-                    </header>
-                    <input type="date" id="sidebar-calendar" class="calendar-box">
+                <!-- Calendario -->
+                <div class="card-custom">
+                    <header><i class="fa-solid fa-calendar-days"></i> Calendario</header>
+                    <input type="date" id="sidebar-calendar" style="margin-bottom: 0;">
+                    <span id="sidebar-calendar-msg" class="calendar-status"></span>
                 </div>
 
             </aside>
             {% endif %}
 
-            <!-- SECCIÓN DEL BLOQUE ÚNICO (Para vistas públicas y privadas) -->
+            <!-- SECCIÓN CENTRAL -->
             <section class="main-content">
                 {% block content %}{% endblock %}
             </section>
@@ -198,11 +233,11 @@
 
     </main>
 
-    <footer class="container">
-        <small>© 2026 Facultad Experimental de Ciencias y Tecnología (FaCyT-UC) | Control de Espacios Científicos</small>
+    <footer class="container-fluid" style="margin-top: 40px; padding: 20px; text-align: center; color: #94a3b8; border-top: 1px solid #e2e8f0;">
+        <small>© 2026 Facultad Experimental de Ciencias y Tecnología (FaCyT-UC) | Sistema de Gestión de Espacios</small>
     </footer>
 
-    <!-- SCRIPT DEL RELOJ Y CALENDARIO -->
+    <!-- SCRIPT DEL RELOJ Y VERIFICACIÓN DE DÍAS -->
     <script>
         function updateClock() {
             const now = new Date();
@@ -225,7 +260,35 @@
 
             const today = new Date().toISOString().split('T')[0];
             const calendarInput = document.getElementById('sidebar-calendar');
-            if (calendarInput) calendarInput.value = today;
+            const calendarMsg = document.getElementById('sidebar-calendar-msg');
+
+            if (calendarInput) {
+                calendarInput.value = today;
+
+                let diasOcupados = [];
+                fetch('/api/dias-ocupados')
+                    .then(res => res.json())
+                    .then(data => {
+                        diasOcupados = data;
+                        verificarDiaOcupado(calendarInput.value);
+                    })
+                    .catch(err => console.error("Error al obtener días ocupados:", err));
+
+                calendarInput.addEventListener('change', function() {
+                    verificarDiaOcupado(this.value);
+                });
+
+                function verificarDiaOcupado(fechaSeleccionada) {
+                    if (!calendarMsg) return;
+                    if (diasOcupados.includes(fechaSeleccionada)) {
+                        calendarMsg.style.color = '#e11d48';
+                        calendarMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Día con eventos';
+                    } else {
+                        calendarMsg.style.color = '#10b981';
+                        calendarMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> Disponible';
+                    }
+                }
+            }
         });
     </script>
 </body>

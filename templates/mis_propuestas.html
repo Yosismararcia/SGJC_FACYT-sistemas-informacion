@@ -7,34 +7,36 @@
 <p>Historial de iniciativas de congresos o talleres que has sugerido al cuerpo docente de la facultad.</p>
 
 <article>
-    <table>
-        <thead>
-            <tr>
-                <th>Idea / Título de Actividad</th>
-                <th>Tipo</th>
-                <th>Descripción Enviada</th>
-                <th>Fecha de Envío</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if mis_propuestas %}
-                {% for prop in mis_propuestas %}
+    <div class="table-responsive"></div>
+        <table>
+            <thead>
                 <tr>
-                    <td><strong>{{ prop.titulo }}</strong></td>
-                    <td><span class="badge" style="background:#2f855a; color:white; padding:2px 6px; border-radius:4px;">{{ prop.tipo_actividad }}</span></td>
-                    <td>{{ prop.descripcion }}</td>
-                    <td>{{ prop.fecha_propuesta }}</td>
+                    <th>Idea / Título de Actividad</th>
+                    <th>Tipo</th>
+                    <th>Descripción Enviada</th>
+                    <th>Fecha de Envío</th>
                 </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #888;">Aún no has enviado ninguna propuesta de evento.</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
-    <footer>
-        <a href="/" class="button secondary">Volver al Inicio</a>
-    </footer>
+            </thead>
+            <tbody>
+                {% if mis_propuestas %}
+                    {% for prop in mis_propuestas %}
+                    <tr>
+                        <td><strong>{{ prop.titulo }}</strong></td>
+                        <td><span class="badge" style="background:#2f855a; color:white; padding:2px 6px; border-radius:4px;">{{ prop.tipo_actividad }}</span></td>
+                        <td>{{ prop.descripcion }}</td>
+                        <td>{{ prop.fecha_propuesta }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #888;">Aún no has enviado ninguna propuesta de evento.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <footer>
+            <a href="/" class="button secondary">Volver al Inicio</a>
+        </footer>
+    </div>
 </article>
 {% endblock %}

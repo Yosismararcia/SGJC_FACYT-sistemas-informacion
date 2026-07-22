@@ -53,11 +53,12 @@
     <section>
         <h3>📌 Próximas Actividades Aprobadas</h3>
         {% if eventos_cartelera %}
-            <div class="grid">
+            <!-- MODIFICACIÓN AQUÍ: GRID AUTO-AJUSTABLE PARA EVITAR COMPRESIÓN -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 {% for ev in eventos_cartelera %}
-                    <article style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <article style="display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 0;">
                         <div>
-                            <header>
+                            <header style="margin-bottom: 12px;">
                                 {% if ev.departamento %}
                                     <small style="color: #00897b; font-weight: bold; display: block; margin-bottom: 4px;">
                                         🏢 {{ ev.departamento }}
@@ -133,7 +134,7 @@
                                 <a href="{{ url_for('difundir_evento', evento_id=ev.id) }}" 
                                    class="button contrast outline" 
                                    style="width: 100%; text-align: center; margin-top: 4px;">
-                                   Ver Ficha de Difusión
+                                    Ver Ficha de Difusión
                                 </a>
                             {% endif %}
                         </footer>

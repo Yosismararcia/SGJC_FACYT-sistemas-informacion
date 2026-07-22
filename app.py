@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import pymysql
 from datetime import datetime
+from flask import jsonify
 
 # 1. Importación de Repositorios (Consolidados)
 import repositories.evento_repository as evento_repo
@@ -238,6 +239,61 @@ def solicitar():
     espacios = evento_repo.obtener_lista_espacios_formulario()
     return render_template('solicitar.html', espacios=espacios)
 
+# --- RUTA 5.1: API DÍAS OCUPADOS (PARA CALENDARIO LATERAL) ---
+@app.route('/api/dias-ocupados')
+def api_dias_ocupados():
+    """Retorna un listado JSON con las fechas ('YYYY-MM-DD') que tienen eventos agendados."""
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute("""
+                SELECT DISTINCT DATE_FORMAT(fecha, '%%Y-%%m-%%d') as fecha 
+                FROM eventos 
+                WHERE estado IN ('aprobado', 'pendiente')
+            """)
+            resultados = cursor.fetchall()
+            fechas = [row['fecha'] for row in resultados]
+        return jsonify(fechas)
+    except Exception as e:
+        print(f"Error en API dias-ocupados: {e}")
+        return jsonify([])
+    finally:
+        conexion.close()
+
+
+# --- RUTA 5.2: API DISPONIBILIDAD DE HORARIOS POR ESPACIO Y FECHA ---
+@app.route('/api/disponibilidad-espacio')
+def api_disponibilidad_espacio():
+    """Retorna las franjas horarias ocupadas de un espacio especifico en una fecha dada."""
+    espacio_id = request.args.get('espacio_id')
+    fecha = request.args.get('fecha')
+
+    if not espacio_id or not fecha:
+        return jsonify([])
+
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute("""
+                SELECT titulo, 
+                       TIME_FORMAT(hora_inicio, '%%H:%%i') as inicio, 
+                       TIME_FORMAT(hora_fin, '%%H:%%i') as fin, 
+                       estado
+                FROM eventos 
+                WHERE espacio_id = %s 
+                  AND fecha = %s 
+                  AND estado IN ('aprobado', 'pendiente')
+                ORDER BY hora_inicio ASC
+            """, (espacio_id, fecha))
+            eventos_ocupados = cursor.fetchall()
+        return jsonify(eventos_ocupados)
+    except Exception as e:
+        print(f"Error en API disponibilidad-espacio: {e}")
+        return jsonify([])
+    finally:
+        conexion.close()
+
+
 # --- RUTA 6: PANEL ADMINISTRATIVO PRIVILEGIADO ---
 @app.route('/admin')
 @requerir_rol(['administrativo'])
@@ -277,15 +333,57 @@ def admin_actualizar_estado(evento_id):
 
     return redirect(url_for('admin'))
 
-# --- RUTA 8: DIVULGACIÓN ESTUDIANTIL ---
+# --- RUTA PARA DIFUSIÓN Y PLANTILLA DE INVITACIÓN ---
+# --- RUTA CORREGIDA PARA DIFUSIÓN ---
 @app.route('/evento/difundir/<int:evento_id>')
 def difundir_evento(evento_id):
-    evento = evento_repo.obtener_evento_por_id(evento_id)
-    if not evento:
-        flash("❌ El evento no existe.", "error")
+    if not session.get('usuario_id'):
+        flash('Debe iniciar sesión para acceder a esta función.', 'error')
+        return redirect(url_for('login'))
+
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor(pymysql.cursors.DictCursor) as cursor:
+            # Consulta limpia sin escapes conflictivos de %
+            cursor.execute("""
+                SELECT e.*, 
+                       esp.nombre AS espacio_nombre
+                FROM eventos e
+                LEFT JOIN espacios esp ON e.espacio_id = esp.id
+                WHERE e.id = %s
+            """, (evento_id,))
+            evento = cursor.fetchone()
+
+        if not evento:
+            flash('El evento solicitado no existe.', 'error')
+            return redirect(url_for('inicio'))
+
+        # Formatear horas y fechas de forma segura en Python por si vienen como objetos timedelta/date
+        if evento.get('hora_inicio'):
+            evento['inicio_formateado'] = str(evento['hora_inicio'])[:5]
+        else:
+            evento['inicio_formateado'] = '--:--'
+
+        if evento.get('hora_fin'):
+            evento['fin_formateado'] = str(evento['hora_fin'])[:5]
+        else:
+            evento['fin_formateado'] = '--:--'
+
+        if evento.get('fecha'):
+            evento['fecha_formateada'] = str(evento['fecha'])
+        else:
+            evento['fecha_formateada'] = 'Sin fecha'
+
+        return render_template('difusion_ficha.html', evento=evento)
+
+    except Exception as e:
+        # Esto te mostrará el error exacto en la terminal de VS Code / consola de Flask
+        print(f"❌ ERROR EXACTO EN DIFUSIÓN: {e}")
+        flash('Error al generar la plantilla de difusión.', 'error')
         return redirect(url_for('inicio'))
-        
-    return render_template('difusion_ficha.html', evento=evento)  # <-- Asegúrate de que tenga este return
+    finally:
+        if conexion:
+            conexion.close()
 
 
 # --- RUTA 9: PROPUESTAS DE ESTUDIANTES ---
@@ -502,13 +600,16 @@ def ver_inscritos_evento(evento_id):
         flash("Debes iniciar sesión para acceder.", "warning")
         return redirect('/login')
 
-    # 2. Validar rol (Soporta 'admin', 'administrativo' y 'profesor')
-    rol_actual = str(session.get('usuario_rol', '')).lower()
+    # 2. Validar rol (Soporta 'admin', 'administrativo', 'profesor' y 'ponente')
+    # Se añade fallback por si el rol se almacenó como 'usuario_rol' o 'rol'
+    rol_bruto = session.get('usuario_rol') or session.get('rol') or ''
+    rol_actual = str(rol_bruto).lower()
+    
     if rol_actual not in ['admin', 'administrativo', 'profesor', 'ponente']:
         flash("No tienes permisos para ver esta lista.", "error")
         return redirect('/')
 
-    # 3. Obtener datos del evento y sus inscritos
+    # 3. Obtener datos del evento y sus inscritos desde el Repositorio
     evento = evento_repo.obtener_evento_por_id(evento_id)
     if not evento:
         flash("El evento solicitado no existe.", "error")
@@ -516,24 +617,34 @@ def ver_inscritos_evento(evento_id):
 
     inscritos = evento_repo.obtener_inscritos_por_evento(evento_id) or []
     
-    # 4. Cargar lista completa de usuarios solo si es personal administrativo
+    # 4. Cargar lista de usuarios no inscritos para la selección del admin
     todos_usuarios = []
-    if rol_actual in ['admin', 'administrativo']:
-        todos_usuarios = evento_repo.obtener_todos_los_usuarios() or []
+    if rol_actual in ['admin', 'administrativo', 'profesor']:
+        usuarios_totales = evento_repo.obtener_todos_los_usuarios() or []
+        
+        # Extraer IDs de usuarios ya inscritos para no mostrarlos repetidos en el select
+        ids_inscritos = [i.get('usuario_id') or i.get('id') for i in inscritos]
+        
+        # Filtrar solo a los usuarios disponibles
+        todos_usuarios = [u for u in usuarios_totales if u.get('id') not in ids_inscritos]
 
+    # Renderiza directamente tu archivo ver_inscritos.html
     return render_template('ver_inscritos.html', 
                            evento=evento, 
                            inscritos=inscritos, 
                            usuarios=todos_usuarios)
 
+
 # -------------------------------------------------------------
 # ➕ INSCRIPCIÓN MANUAL POR PARTE DEL ADMINISTRADOR
 # -------------------------------------------------------------
-@app.route('/admin/inscribir-manual/<int:evento_id>', methods=['POST'])
+@app.route('/admin/inscribir_manual/<int:evento_id>', methods=['POST'])
 def admin_inscribir_manual(evento_id):
-    rol_actual = session.get('usuario_rol', '').lower()
-    if rol_actual not in ['admin', 'administrativo']:
-        flash("Solo los administradores pueden realizar inscripciones manuales.", "error")
+    rol_bruto = session.get('usuario_rol') or session.get('rol') or ''
+    rol_actual = str(rol_bruto).lower()
+    
+    if rol_actual not in ['admin', 'administrativo', 'profesor']:
+        flash("Solo los administradores y personal autorizado pueden realizar inscripciones manuales.", "error")
         return redirect('/')
 
     usuario_id = request.form.get('usuario_id')
@@ -541,6 +652,7 @@ def admin_inscribir_manual(evento_id):
         flash("Debes seleccionar un usuario válido.", "warning")
         return redirect(url_for('ver_inscritos_evento', evento_id=evento_id))
 
+    # Intento de inscripción a través de tu repositorio
     exito, mensaje = evento_repo.inscribir_usuario_evento(usuario_id, evento_id)
 
     if exito:
@@ -548,8 +660,8 @@ def admin_inscribir_manual(evento_id):
     else:
         flash(f"⚠️ {mensaje}", "error")
 
+    # Corrección aquí: Se llama a 'ver_inscritos_evento' (en singular)
     return redirect(url_for('ver_inscritos_evento', evento_id=evento_id))
-
 
 # -------------------------------------------------------------
 # 🎓 VISTA EXCLUSIVA DE INSCRITOS PARA PONENTES / PROFESORES

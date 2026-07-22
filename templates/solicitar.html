@@ -47,7 +47,7 @@
 
         <!-- 3. Selección de Espacio Físico o Virtual -->
         <label for="espacio_id">Espacio Físico o Modalidad Solicitada:</label>
-        <select id="espacio_id" name="espacio_id" onchange="toggleEnlaceVirtual()" required>
+        <select id="espacio_id" name="espacio_id" onchange="consultarDisponibilidad()" required>
             <option value="" disabled selected>Seleccione el lugar...</option>
             {% for espacio in espacios %}
                 <option value="{{ espacio.id }}">{{ espacio.nombre }} (Capacidad: {{ espacio.capacidad }})</option>
@@ -65,7 +65,7 @@
         <div class="grid">
             <div>
                 <label for="fecha">Fecha del Evento:</label>
-                <input type="date" id="fecha" name="fecha" required>
+                <input type="date" id="fecha" name="fecha" onchange="consultarDisponibilidad()" required>
             </div>
             <div>
                 <label for="hora_inicio">Hora de Inicio:</label>
@@ -78,15 +78,26 @@
             </div>
         </div>
 
+        <!-- 5. Línea de Tiempo / Disponibilidad Visual en Tiempo Real -->
+        <div id="disponibilidad-container" style="display: none; margin-bottom: 1.5rem; background: #fdfdfe; border: 1px solid #e3e6f0; border-radius: 8px; padding: 1rem;">
+            <label style="font-weight: bold; margin-bottom: 0.5rem; display: block;">🕒 Estado de Ocupación para esta Fecha:</label>
+            <div id="timeline-slots">
+                <small style="color: #6c757d;">Cargando disponibilidad...</small>
+            </div>
+        </div>
+
         <input type="submit" value="Enviar Solicitud de Evento" class="primary">
     </form>
 </article>
 
-<!-- Script para detectar selección de modalidad virtual sin romper la estructura -->
+<!-- Script para manejar la modalidad virtual y la consulta de disponibilidad en la línea de tiempo -->
 <script>
 function toggleEnlaceVirtual() {
     var selectEspacio = document.getElementById('espacio_id');
     var divVirtual = document.getElementById('div_enlace_virtual');
+    
+    if (!selectEspacio.value) return;
+    
     var selectedText = selectEspacio.options[selectEspacio.selectedIndex].text.toLowerCase();
 
     if (selectedText.includes('virtual') || selectedText.includes('meet') || selectedText.includes('zoom')) {
@@ -94,6 +105,43 @@ function toggleEnlaceVirtual() {
     } else {
         divVirtual.style.display = 'none';
     }
+}
+
+function consultarDisponibilidad() {
+    toggleEnlaceVirtual();
+
+    var espacioId = document.getElementById('espacio_id').value;
+    var fecha = document.getElementById('fecha').value;
+    var contenedor = document.getElementById('disponibilidad-container');
+    var slotsDiv = document.getElementById('timeline-slots');
+
+    // Si falta alguno de los dos campos, ocultamos el bloque
+    if (!espacioId || !fecha) {
+        contenedor.style.display = 'none';
+        return;
+    }
+
+    contenedor.style.display = 'block';
+    slotsDiv.innerHTML = '<small style="color: #6c757d;">Consultando disponibilidad en la base de datos...</small>';
+
+    fetch(`/api/disponibilidad-espacio?espacio_id=${espacioId}&fecha=${fecha}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                slotsDiv.innerHTML = '<span style="color: #28a745; font-size: 0.9rem;">✅ ¡Excelente! El espacio está completamente libre en esta fecha.</span>';
+            } else {
+                let html = '<ul style="margin: 0; padding-left: 20px; font-size: 0.85rem; color: #dc3545;">';
+                data.forEach(ev => {
+                    html += `<li style="margin-bottom: 4px;"><strong>${ev.inicio} - ${ev.fin}</strong>: ${ev.titulo} <span style="background: #ffeeba; color: #856404; padding: 1px 6px; border-radius: 4px; font-size: 0.75rem;">${ev.estado}</span></li>`;
+                });
+                html += '</ul>';
+                slotsDiv.innerHTML = html;
+            }
+        })
+        .catch(err => {
+            console.error("Error al consultar disponibilidad:", err);
+            slotsDiv.innerHTML = '<span style="color: #dc3545; font-size: 0.9rem;">❌ No se pudo cargar la disponibilidad en este momento.</span>';
+        });
 }
 </script>
 {% endblock %}

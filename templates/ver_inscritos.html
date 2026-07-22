@@ -4,18 +4,22 @@
 
 {% block content %}
 <article>
-    <header style="display: flex; justify-content: space-between; align-items: center;">
+    <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
             <h2>📋 Participantes Inscritos</h2>
-            <p><strong>Evento:</strong> {{ evento.titulo }} | 📍 {{ evento.espacio_nombre }}</p>
+            <!-- Fallback para evitar el pin sin texto cuando espacio_nombre viene nulo -->
+            <p style="margin: 0;">
+                <strong>Evento:</strong> {{ evento.titulo }} | 📍 {{ evento.espacio_nombre or evento.espacio or 'Por asignar' }}
+            </p>
         </div>
-        <a href="javascript:history.back()" class="button secondary outline">⬅️ Volver</a>
+        <a href="javascript:history.back()" class="button secondary outline" style="margin: 0;">⬅️ Volver</a>
     </header>
 
-    <!-- SECCIÓN SOLO PARA ADMINISTRADORES: INSCRIPCIÓN MANUAL -->
-    {% if session.get('rol') == 'admin' %}
-        <details open style="margin-bottom: 25px; border: 1px solid var(--primary); padding: 15px; border-radius: 8px;">
-            <summary><strong>➕ Inscripción Manual de Usuario (Solo Admin)</strong></summary>
+    <!-- SECCIÓN SOLO PARA ADMINISTRADORES / ADMINISTRATIVOS: INSCRIPCIÓN MANUAL -->
+    {% set rol_user = (session.get('rol') or session.get('usuario_rol') or '')|lower %}
+    {% if rol_user in ['admin', 'administrativo', 'profesor'] %}
+        <details open style="margin-top: 20px; margin-bottom: 25px; border: 1px solid var(--primary); padding: 15px; border-radius: 8px; background-color: rgba(0, 150, 136, 0.03);">
+            <summary><strong>➕ Inscripción Manual de Usuario</strong></summary>
             <form action="{{ url_for('admin_inscribir_manual', evento_id=evento.id) }}" method="POST" style="margin-top: 15px;">
                 <div class="grid">
                     <div>
@@ -23,12 +27,12 @@
                         <select name="usuario_id" id="usuario_id" required>
                             <option value="" disabled selected>-- Elija un usuario registrado --</option>
                             {% for u in usuarios %}
-                                <option value="{{ u.id }}">{{ u.nombre }} ({{ u.cedula }}) - {{ u.rol|capitalize }}</option>
+                                <option value="{{ u.id }}">{{ u.nombre }} {% if u.cedula %}({{ u.cedula }}){% endif %} - {{ u.rol|capitalize }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div style="display: flex; align-items: flex-end;">
-                        <button type="submit">Inscribir Manualmente</button>
+                        <button type="submit" style="width: 100%;">Inscribir Manualmente</button>
                     </div>
                 </div>
             </form>
@@ -38,7 +42,7 @@
     <!-- TABLA DE LISTADO DE INSCRITOS -->
     <h3>Lista de Asistentes (Total: {{ inscritos|length }})</h3>
     {% if inscritos %}
-        <figure>
+        <figure style="overflow-x: auto;">
             <table>
                 <thead>
                     <tr>
@@ -55,8 +59,8 @@
                         <tr>
                             <td>{{ loop.index }}</td>
                             <td><strong>{{ ins.nombre }}</strong></td>
-                            <td>{{ ins.cedula }}</td>
-                            <td>{{ ins.correo }}</td>
+                            <td>{{ ins.cedula or 'N/P' }}</td>
+                            <td>{{ ins.correo or ins.email }}</td>
                             <td><mark>{{ ins.rol|capitalize }}</mark></td>
                             <td><small>{{ ins.fecha_inscripcion }}</small></td>
                         </tr>

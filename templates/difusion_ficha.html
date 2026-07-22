@@ -1,47 +1,124 @@
 {% extends 'base.html' %}
+
+{% block title %}Difundir Evento - FaCyT{% endblock %}
+
 {% block content %}
-<div class="container" style="max-width: 700px; margin-top: 30px;">
-    <h2>📢 Plantilla de Invitación Generada</h2>
-    <p>Copia el siguiente texto para enviarlo por los canales de difusión oficiales:</p>
+<article class="card-custom">
+    <header>
+        <h3 style="margin:0;"><i class="fa-solid fa-bullhorn text-primary"></i> Plantilla de Invitación y Divulgación</h3>
+    </header>
 
-    <!-- Cuadro de texto dinámico listo para copiar -->
-    <div style="background-color: #f9f9f9; border-left: 5px solid #003366; padding: 20px; font-family: Arial, sans-serif; white-space: pre-line; line-height: 1.6;">
-        <strong>UNIVERSIDAD DE CARABOBO</strong>
-        FACULTAD DE CIENCIAS Y TECNOLOGÍA (FACYT)
-        
-        <strong>INVITACIÓN</strong>
-        
-        Se invita cordialmente a toda la comunidad universitaria y al público general a participar en el evento denominado: 
-        <strong>"{{ evento.titulo }}"</strong>.
-        
-        <strong>Propósito/Descripción del evento:</strong>
-        {{ evento.descripcion }}
-        
-        🗓️ <strong>Detalles del encuentro:</strong>
-        • <strong>Fecha:</strong> {{ evento.fecha }}
-        • <strong>Hora:</strong> {{ evento.hora }}
-        • <strong>Lugar:</strong> {{ evento.lugar }}
-        
-        Agradecemos de antemano su receptividad y valiosa asistencia, la cual dará el realce institucional necesario a esta actividad académica
-        
-        <em>Atentamente,</em>
-        <strong>Comité Organizador FACYT</strong>
-        
+    <p style="color: #64748b;">A continuación se presenta la tarjeta oficial de invitación generada dinámicamente con los detalles del evento:</p>
+
+    <!-- VISTA PREVIA FORMATO TARJETA -->
+    <div style="background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div style="text-align: center; border-bottom: 2px solid #0284c7; padding-bottom: 0.75rem; margin-bottom: 1rem;">
+            <h5 style="margin:0; color: #0f172a; font-weight: 800;">UNIVERSIDAD DE CARABOBO</h5>
+            <h6 style="margin:0; color: #0284c7; font-size: 0.9rem;">FACULTAD EXPERIMENTAL DE CIENCIAS Y TECNOLOGÍA (FACYT)</h6>
+        </div>
+
+        <h4 style="text-align: center; color: #1e293b; margin-top: 1rem; margin-bottom: 1rem; text-transform: uppercase;">
+            📢 INVITACIÓN: {{ evento.titulo }}
+        </h4>
+
+        <p style="font-size: 0.95rem; line-height: 1.5; color: #334155;">
+            Se invita cordialmente a toda la comunidad universitaria y público general a participar en la actividad académica del tipo <strong>{{ evento.tipo_actividad or 'Evento Académico' }}</strong>, organizada por el Departamento/Dependencia de <strong>{{ evento.departamento or 'FaCyT' }}</strong>.
+        </p>
+
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border-left: 4px solid #0284c7; margin: 1rem 0;">
+            <p style="margin-bottom: 0.5rem;"><strong><i class="fa-solid fa-align-left"></i> Descripción / Propósito:</strong></p>
+            <p style="margin:0; color: #475569; font-style: italic;">{{ evento.descripcion or 'Sin descripción adicional proporcionada.' }}</p>
+        </div>
+
+        <div class="grid" style="margin-top: 1rem; background: #f1f5f9; padding: 1rem; border-radius: 8px;">
+            <div>
+                <strong><i class="fa-solid fa-calendar"></i> Fecha:</strong> {{ evento.fecha_formateada }}
+            </div>
+            <div>
+                <strong><i class="fa-solid fa-clock"></i> Hora:</strong> {{ evento.inicio_formateado }} - {{ evento.fin_formateado }}
+            </div>
+            <div>
+                <strong><i class="fa-solid fa-location-dot"></i> Lugar:</strong> {{ evento.espacio_nombre or 'Por definir' }}
+            </div>
+        </div>
+
+        {% if evento.enlace_virtual %}
+        <div style="margin-top: 1rem; text-align: center;">
+            <a href="{{ evento.enlace_virtual }}" target="_blank" role="button" class="contrast" style="padding: 0.4rem 1rem; font-size: 0.85rem;">
+                <i class="fa-solid fa-video"></i> Unirse a Transmisión Virtual
+            </a>
+        </div>
+        {% endif %}
+
+        <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b; margin-bottom: 0;">
+            <em>Atentamente,<br>Comité Organizador / Gestión de Eventos FaCyT</em>
+        </p>
     </div>
 
-    <div style="margin-top: 20px;">
-        <a href="/admin" class="button">Volver al Panel</a>
+    <!-- PANEL DE DIVULGACIÓN E INTEGRACIONES -->
+    <h4><i class="fa-solid fa-share-nodes"></i> Canales de Difusión Directa</h4>
+    <p style="font-size: 0.9rem; color: #64748b;">Seleccione una vía para publicar o enviar este mensaje de forma automática:</p>
+
+    <div class="grid">
+        <!-- 1. Enviar por Telegram -->
+        <button onclick="compartirTelegram()" style="background-color: #229ED9; border-color: #229ED9;">
+            <i class="fa-brands fa-telegram"></i> Difundir por Telegram
+        </button>
+
+        <!-- 2. Enviar por Correo Electrónico -->
+        <button onclick="compartirCorreo()" style="background-color: #ea4335; border-color: #ea4335;">
+            <i class="fa-solid fa-envelope"></i> Enviar por Correo
+        </button>
+
+        <!-- 3. Copiar Texto Portapapeles -->
+        <button onclick="copiarTexto()" class="secondary">
+            <i class="fa-solid fa-copy"></i> Copiar Formato Texto
+        </button>
     </div>
-</div>
+
+    <textarea id="texto-invitacion" style="opacity: 0; height: 1px; position: absolute;">
+UNIVERSIDAD DE CARABOBO - FACYT
+INVITACIÓN ACADÉMICA: {{ evento.titulo }}
+
+Departamento: {{ evento.departamento or 'FaCyT' }}
+Tipo: {{ evento.tipo_actividad or 'Evento Académico' }}
+
+📅 Fecha: {{ evento.fecha_formateada }}
+⏰ Hora: {{ evento.inicio_formateado }} - {{ evento.fin_formateado }}
+📍 Lugar: {{ evento.espacio_nombre or 'Por definir' }}
+{% if evento.enlace_virtual %}🔗 Enlace Virtual: {{ evento.enlace_virtual }}{% endif %}
+
+Descripción: {{ evento.descripcion or 'Sin descripción' }}
+
+¡Contamos con tu asistencia!
+    </textarea>
+
+    <div style="margin-top: 1.5rem;">
+        <a href="{{ url_for('inicio') }}" class="outline secondary"><i class="fa-solid fa-arrow-left"></i> Volver al Panel</a>
+    </div>
+</article>
 
 <script>
-function copiarFicha() {
-    var copyText = document.getElementById("md-box");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    navigation.clipboard.writeText(copyText.value);
-    alert("¡Ficha Markdown copiada! Lista para enviar por Telegram o WhatsApp 🚀");
+function obtenerMensaje() {
+    return document.getElementById('texto-invitacion').value;
+}
+
+function compartirTelegram() {
+    const texto = encodeURIComponent(obtenerMensaje());
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${texto}`, '_blank');
+}
+
+function compartirCorreo() {
+    const asunto = encodeURIComponent("Invitación: {{ evento.titulo }} - FaCyT");
+    const cuerpo = encodeURIComponent(obtenerMensaje());
+    window.open(`mailto:?subject=${asunto}&body=${cuerpo}`, '_blank');
+}
+
+function copiarTexto() {
+    const copyText = document.getElementById("texto-invitacion");
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        alert("¡Texto de invitación copiado al portapapeles!");
+    });
 }
 </script>
-
 {% endblock %}
