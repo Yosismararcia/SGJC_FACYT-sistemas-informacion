@@ -3,36 +3,42 @@
 {% block title %}Iniciar Sesión - SGJC-FaCyT{% endblock %}
 
 {% block content %}
-<article style="max-width: 500px; margin: 40px auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <header style="text-align: center; margin-bottom: 25px;">
-        <h3 style="margin-bottom: 5px;">¡Bienvenido al SGC-FaCyT!</h3>
-        <p style="color: #666; font-size: 0.95rem;">Ingresa tus credenciales institucionales para acceder</p>
-    </header>
-    
-    <form action="/login" method="POST">
-        <!-- Input de Correo -->
-        <label for="correo">Correo Electrónico:</label>
-        <input type="email" id="correo" name="correo" placeholder="usuario@uc.edu.ve" required>
+<main class="container" style="display: flex; justify-content: center; align-items: center; min-height: 70vh; padding: 20px 0;">
+    <article style="max-width: 450px; width: 100%; margin: 0 auto; padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); background: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
+        <header style="text-align: center; margin-bottom: 25px; background: transparent; border-bottom: none; padding: 0;">
+            <h3 style="margin-bottom: 5px; font-weight: 700; color: #0f172a;">¡Bienvenido al SGC-FaCyT!</h3>
+            <p style="color: #666; font-size: 0.95rem; margin: 0;">Ingresa tus credenciales institucionales para acceder</p>
+        </header>
 
-        <!-- Input de Contraseña -->
-        <label for="contrasena">Contraseña:</label>
-        <input type="password" id="contrasena" name="contrasena" placeholder="••••••••" required>
+        <form action="/login" method="POST">
+            <!-- Input de Correo -->
+            <div style="margin-bottom: 15px;">
+                <label for="correo" style="font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px;">Correo Electrónico:</label>
+                <input type="email" id="correo" name="correo" placeholder="usuario@uc.edu.ve" required style="width: 100%; margin: 0;">
+            </div>
 
-        <!-- Botón de Envío -->
-        <input type="submit" value="Ingresar" class="primary" style="width: 100%; margin-top: 10px;">
-    </form>
-    
-    <hr style="margin: 25px 0;">
-    
-    <footer style="text-align: center; font-size: 0.9rem; background: none; padding: 0;">
-        <p style="margin-bottom: 8px;">
-            ¿No tienes una cuenta académica? <a href="/registro">Regístrate aquí</a>
-        </p>
-        <p style="margin-bottom: 0;">
-            <a href="/recuperar-acceso" style="color: #c53030; font-weight: 500;">
-                ¿Olvidaste tu contraseña? Recuperar mi cuenta 🔑
-            </a>
-        </p>
-    </footer>
-</article>
+            <!-- Input de Contraseña -->
+            <div style="margin-bottom: 20px;">
+                <label for="contrasena" style="font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px;">Contraseña:</label>
+                <input type="password" id="contrasena" name="contrasena" placeholder="••••••••" required style="width: 100%; margin: 0;">
+            </div>
+
+            <!-- Botón de Envío -->
+            <input type="submit" value="Ingresar" class="primary" style="width: 100%; margin-top: 5px; font-weight: 700; cursor: pointer;">
+        </form>
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color, #dee2e6);">
+
+        <footer style="text-align: center; font-size: 0.9rem; background: transparent; border-top: none; padding: 0;">
+            <p style="margin-bottom: 8px;">
+                ¿No tienes una cuenta académica? <a href="/registro" style="font-weight: 600;">Regístrate aquí</a>
+            </p>
+            <p style="margin-bottom: 0;">
+                <a href="/recuperar-acceso" style="color: #c53030; font-weight: 500; text-decoration: none;">
+                    ¿Olvidaste tu contraseña? Recuperar mi cuenta 🔑
+                </a>
+            </p>
+        </footer>
+    </article>
+</main>
 {% endblock %}
