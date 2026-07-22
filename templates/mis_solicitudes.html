@@ -16,37 +16,53 @@
                     <th>Fecha y Horario</th>
                     <th>Espacio Físico</th>
                     <th>Estado Actual</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% if solicitudes %}
                     {% for sol in solicitudes %}
+                    {% set sol_id = sol.id if sol.id is defined else (sol['id'] if 'id' in sol else sol.get('id_solicitud', '')) %}
                     <tr>
-                        <td><strong>{{ sol.titulo }}</strong></td>
-                        <td>{{ sol.tipo_actividad }}</td>
-                        <td>{{ sol.fecha }} ({{ sol.hora_inicio }} - {{ sol.hora_fin }})</td>
-                        <td>{{ sol.espacio }}</td>
+                        <td><strong>{{ sol.titulo if sol.titulo is defined else sol.get('titulo', '') }}</strong></td>
+                        <td>{{ sol.tipo_actividad if sol.tipo_actividad is defined else sol.get('tipo_actividad', '') }}</td>
                         <td>
-                            <!-- Badges de colores dinámicos según el estado -->
-                            <mark style="
-                                background-color: {{ '#d1e7dd' if sol.estado in ['aprobado', 'programado'] else ('#fff3cd' if sol.estado in ['solicitado', 'en revisión'] else '#f8d7da') }};
-                                color: {{ '#0f5132' if sol.estado in ['aprobado', 'programado'] else ('#664d03' if sol.estado in ['solicitado', 'en revisión'] else '#842029') }};
-                                padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold;
-                            ">
-                                {{ sol.estado | upper }}
-                            </mark>
+                            {{ sol.fecha if sol.fecha is defined else sol.get('fecha', '') }} 
+                            ({{ sol.hora_inicio if sol.hora_inicio is defined else sol.get('hora_inicio', '') }} - {{ sol.hora_fin if sol.hora_fin is defined else sol.get('hora_fin', '') }})
+                        </td>
+                        <td>{{ sol.espacio if sol.espacio is defined else sol.get('espacio', '') }}</td>
+                        <td>
+                            {% set estado_lower = (sol.estado if sol.estado is defined else sol.get('estado', '')) | lower %}
+                            {% if estado_lower in ['aprobado', 'programado'] %}
+                                <mark style="background-color: #d1e7dd; color: #0f5132; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold;">
+                                    {{ estado_lower | upper }}
+                                </mark>
+                            {% elif estado_lower in ['solicitado', 'en revisión', 'pendiente'] %}
+                                <mark style="background-color: #fff3cd; color: #664d03; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold;">
+                                    {{ estado_lower | upper }}
+                                </mark>
+                            {% else %}
+                                <mark style="background-color: #f8d7da; color: #842029; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold;">
+                                    {{ estado_lower | upper }}
+                                </mark>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if estado_lower in ['aprobado', 'programado'] and sol_id %}
+                                <a href="{{ url_for('ponente_ver_inscritos', evento_id=sol_id) }}" class="button" style="padding: 4px 8px; font-size: 0.8rem;">
+                                    👥 Ver Inscritos
+                                </a>
+                            {% else %}
+                                <span style="color: #888; font-size: 0.8rem;">N/A</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="5" style="text-align: center; color: #888;">
-                            Aún no has realizado ninguna solicitud. 💡 <br>
-                            <a href="/solicitar" class="button" style="margin-top: 1rem;">Solicitar mi primer espacio</a>
-                            
-                            <a href="{{ url_for('ponente_ver_inscritos', evento_id=solicitud.id) }}" class="btn btn-sm btn-info text-white">
-                                👥 Ver Inscritos
-                            </a>
+                        <td colspan="6" style="text-align: center; color: #888;">
+                            Aún no has realizado ninguna solicitud. 💡 <br><br>
+                            <a href="/solicitar" class="button">Solicitar mi primer espacio</a>
                         </td>
                     </tr>
                 {% endif %}
