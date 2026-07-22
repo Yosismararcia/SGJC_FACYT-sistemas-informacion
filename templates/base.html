@@ -2,75 +2,204 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SGJC-FaCyT{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}SGJC - FaCyT UC{% endblock %}</title>
+    
     <!-- Pico.css Base -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-    <!-- FontAwesome para Íconos Atractivos -->
+    <!-- FontAwesome para Íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
     <style>
         :root {
+            /* Paleta Institucional UC / FaCyT */
             --primary: #0056b3;
-            --primary-hover: #004085;
-            --accent: #17a2b8;
-            --bg-main: #f4f6f9;
+            --primary-gradient: linear-gradient(135deg, #0056b3, #003366);
+            --primary-hover: #003f88;
+            --accent: #0284c7;
+            --accent-glow: rgba(2, 132, 199, 0.15);
+            --bg-main: #f1f5f9;
             --bg-card: #ffffff;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
-            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --radius: 10px;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
         }
 
-        body {
+        /* RESET Y PREVENCIÓN DE DESBORDAMIENTO MÓVIL */
+        *, *::before, *::after {
+            box-sizing: border-box !important;
+        }
+
+        html, body {
             background-color: var(--bg-main) !important;
             color: var(--text-main) !important;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+            font-size: 15px;
+            line-height: 1.5;
         }
 
-        /* Neutralizar forzado oscuro de Pico.css */
-        [data-theme="dark"], article, section, div, main, .card {
+        /* ANULAR FUERZO OSCURO DE PICO.CSS EN TODOS LOS NIVELES */
+        [data-theme="dark"], article, section, div, main, .card, header, footer {
             background-color: transparent;
             color: inherit;
         }
 
         /* =========================================================
-           MAQUETACIÓN PRINCIPAL Y BARRA LATERAL (SIDEBAR LAYOUT)
+           ENCABEZADO, BRANDING Y LOGOS
            ========================================================= */
-        .app-layout {
-            display: grid !important;
-            grid-template-columns: 280px 1fr !important; /* Sidebar fija de 280px, resto para contenido */
-            gap: 25px !important;
-            align-items: start !important;
+        .top-navbar {
+            background: #ffffff !important;
+            border-bottom: 2px solid #e2e8f0 !important;
+            padding: 10px 20px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-wrapper {
             max-width: 1400px;
-            margin: 20px auto;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        /* Sidebar contenedor */
-        .sidebar {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 15px !important;
-            width: 100% !important;
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
         }
 
-        /* Sección principal del dashboard */
-        .main-content {
-            width: 100% !important;
-            min-width: 0; /* Evita desbordamiento de tablas/grids */
+        .brand-logos {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Adaptabilidad para móviles */
-        @media (max-width: 992px) {
-            .app-layout {
-                grid-template-columns: 1fr !important;
-            }
+        .logo-img {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 6px rgba(0,86,179,0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            line-height: 1.1;
+        }
+
+        .brand-text span {
+            font-size: 0.75rem !important;
+            color: var(--text-muted) !important;
+            font-weight: 600;
+            display: block;
+        }
+
+        /* NAVEGACIÓN DENSIDAD Y BOTONES */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-link-custom {
+            color: #334155 !important;
+            font-weight: 600 !important;
+            font-size: 0.88rem !important;
+            padding: 8px 12px !important;
+            border-radius: 8px;
+            text-decoration: none !important;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+
+        .nav-link-custom i {
+            color: var(--primary);
+        }
+
+        .nav-link-custom:hover {
+            background-color: #f1f5f9 !important;
+            color: var(--primary) !important;
+        }
+
+        .btn-logout {
+            background-color: #fef2f2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fecaca !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+        }
+
+        .btn-logout:hover {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
         }
 
         /* =========================================================
-           COMPONENTES Y TARJETAS
+           MAQUETACIÓN Y DISTRIBUCIÓN
+           ========================================================= */
+        .app-layout {
+            display: grid !important;
+            grid-template-columns: 280px 1fr !important;
+            gap: 20px !important;
+            align-items: start !important;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        .sidebar {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 16px !important;
+            width: 100% !important;
+        }
+
+        .main-content {
+            width: 100% !important;
+            min-width: 0;
+        }
+
+        /* =========================================================
+           TARJETAS Y CONTENEDORES
            ========================================================= */
         article, .card, .card-custom, main article {
             background-color: var(--bg-card) !important;
@@ -79,17 +208,24 @@
             border-radius: var(--radius) !important;
             box-shadow: var(--shadow-soft) !important;
             padding: 20px !important;
-            margin-bottom: 15px !important;
+            margin-bottom: 20px !important;
         }
 
         .card-custom header {
             font-weight: 700;
             margin-bottom: 12px;
             font-size: 0.95rem;
-            color: #0f172a;
-            border-bottom: 1px solid var(--border-color);
+            color: #0f172a !important;
+            border-bottom: 2px solid #f1f5f9;
             padding-bottom: 8px;
             background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-custom header i {
+            color: var(--primary);
         }
 
         h1, h2, h3, h4, h5, h6, strong {
@@ -97,17 +233,18 @@
             font-weight: 700 !important;
         }
 
-        p, span, label, small {
+        p, label, span {
             color: var(--text-main);
         }
 
-        /* Clock Box y Calendario Status */
+        /* RELOJ Y CALENDARIO */
         .clock-box {
-            font-size: 1.6rem !important;
+            font-size: 1.8rem !important;
             font-weight: 800 !important;
             color: var(--primary) !important;
             text-align: center;
-            margin: 5px 0;
+            letter-spacing: 1px;
+            margin: 4px 0;
         }
 
         .date-box {
@@ -119,13 +256,16 @@
 
         .calendar-status {
             display: block;
-            margin-top: 8px;
+            margin-top: 10px;
             font-size: 0.85rem;
             font-weight: 600;
             text-align: center;
+            padding: 6px;
+            border-radius: 6px;
+            background-color: #f8fafc;
         }
 
-        /* Badges / Etiquetas */
+        /* BADGES */
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -142,72 +282,67 @@
         }
 
         /* =========================================================
-           TARJETAS KPI / ESTADÍSTICAS Y GRID
+           TABLAS, FORMULARIOS E INPUTS
            ========================================================= */
-        .grid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
-            gap: 15px !important;
-            margin-bottom: 20px !important;
+        label {
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            color: #334155 !important;
+            margin-bottom: 6px !important;
+            display: block;
         }
 
-        .grid > div, .kpi-card, .metric-box {
+        input, select, textarea {
             background-color: #ffffff !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: var(--radius) !important;
-            padding: 16px !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
-            text-align: center;
+            color: #0f172a !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            font-size: 0.95rem !important;
+            width: 100% !important;
         }
 
-        .kpi-card span, .grid > div span, .grid > div strong {
-            color: var(--text-main) !important;
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px var(--accent-glow) !important;
+            outline: none !important;
         }
 
-        .kpi-card .number, .grid > div h3 {
-            font-size: 2rem !important;
-            font-weight: 800 !important;
-            color: var(--primary) !important;
-            margin: 5px 0 !important;
-        }
-
-        /* =========================================================
-           TABLAS, NAVEGACIÓN Y FORMULARIOS
-           ========================================================= */
-        .nav-container {
-            background-color: #ffffff !important;
-            border-bottom: 1px solid var(--border-color) !important;
+        button, .button, input[type="submit"] {
+            background: var(--primary-gradient) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 8px !important;
             padding: 10px 20px !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            margin-bottom: 20px;
+            font-weight: 600 !important;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 51, 102, 0.2);
+            transition: all 0.2s ease;
         }
 
-        .nav-brand {
-            font-weight: 800;
-            font-size: 1.1rem;
-            color: #0f172a;
+        button:hover, .button:hover, input[type="submit"]:hover {
+            background-color: var(--primary-hover) !important;
+            transform: translateY(-1px);
         }
 
-        .nav-link-custom {
-            color: var(--text-main) !important;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .nav-link-custom:hover {
-            color: var(--primary) !important;
+        /* TABLAS RESPONSIVAS */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
         }
 
         table {
             width: 100% !important;
             border-collapse: collapse !important;
             background-color: #ffffff !important;
-            color: var(--text-main) !important;
+            margin: 0 !important;
         }
 
         table th {
-            background-color: #f8f9fa !important;
-            color: #495057 !important;
+            background-color: #f8fafc !important;
+            color: #334155 !important;
             font-weight: 700 !important;
             border-bottom: 2px solid var(--border-color) !important;
             padding: 12px 16px !important;
@@ -216,124 +351,143 @@
 
         table td {
             padding: 12px 16px !important;
-            border-bottom: 1px solid var(--border-color) !important;
+            border-bottom: 1px solid #f1f5f9 !important;
             color: var(--text-main) !important;
         }
 
-        input, select, textarea {
-            background-color: #ffffff !important;
-            color: #212529 !important;
-            border: 1px solid #ced4da !important;
-            border-radius: 6px !important;
-            padding: 10px 14px !important;
-            font-size: 0.95rem !important;
-            width: 100%;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15) !important;
-            outline: none !important;
-        }
-
-        button, .button, input[type="submit"] {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 6px !important;
-            padding: 10px 20px !important;
-            font-weight: 600 !important;
-            cursor: pointer;
-        }
-
-        button:hover, .button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover) !important;
-        }
-
-        /* Alertas / Mensajes Flash */
+        /* FLASH MESSAGES */
         .msg-flash {
             padding: 12px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-bottom: 20px;
             font-weight: 600;
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .msg-error, .msg-danger { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
-        .msg-success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .msg-error, .msg-danger { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .msg-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+        /* =========================================================
+           ADAPTABILIDAD MÓVIL (RESPONSIVE DESIGN)
+           ========================================================= */
+        @media (max-width: 992px) {
+            .app-layout {
+                grid-template-columns: 1fr !important;
+                padding: 0 10px;
+            }
+
+            .nav-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-menu {
+                width: 100%;
+                justify-content: space-between;
+                overflow-x: auto;
+                padding-bottom: 4px;
+            }
+
+            .nav-link-custom {
+                font-size: 0.8rem !important;
+                padding: 6px 10px !important;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- NAVEGACIÓN -->
-    <nav class="nav-container container-fluid">
-        <ul>
-            <li>
-                <span class="nav-brand"><i class="fa-solid fa-atom text-primary"></i> SGJC - FaCyT</span>
-            </li>
-        </ul>
-        <ul>
-            {% if session.get('usuario_id') %}
-                <li><a href="{{ url_for('inicio') }}" class="nav-link-custom"><i class="fa-solid fa-chart-pie"></i> Inicio / Métricas</a></li>
+    <!-- ENCABEZADO Y NAVEGACIÓN -->
+    <header class="top-navbar">
+        <div class="nav-wrapper">
+            
+            <!-- LOGOS Y TITULO DEL SISTEMA -->
+            <a href="/" class="brand-container">
+                <div class="brand-logos">
+                    <!-- Si tienes las imágenes colócalas en static/img/ y descomenta las siguientes líneas -->
+                    <!-- <img src="{{ url_for('static', filename='img/logo_uc.png') }}" alt="UC" class="logo-img"> -->
+                    <!-- <img src="{{ url_for('static', filename='img/logo_facyt.png') }}" alt="FaCyT" class="logo-img"> -->
+                    
+                    <!-- Marcadores mientras agregas tus imágenes -->
+                    <div class="logo-placeholder"><i class="fa-solid fa-atom"></i></div>
+                </div>
+                <div class="brand-text">
+                    <h1>SGJC - FaCyT</h1>
+                    <span>Gestión de Jornadas Científicas y Eventos Académicos</span>
+                </div>
+            </a>
 
-                {% if session.get('usuario_rol') in ['administrative', 'administrativo'] %}
-                    <li><a href="/admin" class="nav-link-custom"><i class="fa-solid fa-sliders"></i> Admin</a></li>
-                    <li><a href="/admin/espacios" class="nav-link-custom"><i class="fa-solid fa-building"></i> Espacios</a></li>
-                {% endif %}
+            <!-- MENÚ PRINCIPAL -->
+            <ul class="nav-menu">
+                {% if session.get('usuario_id') %}
+                    <li><a href="{{ url_for('inicio') }}" class="nav-link-custom"><i class="fa-solid fa-chart-pie"></i> Inicio</a></li>
 
-                {% if session.get('usuario_rol') in ['estudiante', 'student'] %}
-                    <li><a href="/proponer" class="nav-link-custom"><i class="fa-solid fa-lightbulb"></i> Proponer</a></li>
-                    <li><a href="/mis_propuestas" class="nav-link-custom"><i class="fa-solid fa-list-check"></i> Mis Propuestas</a></li>
-                {% endif %}
-                
-                {% if session.get('usuario_rol') not in ['estudiante', 'student'] %}
-                    <li><a href="/solicitar" class="nav-link-custom"><i class="fa-solid fa-calendar-plus"></i> Registrar Evento</a></li>
-                    <li><a href="/mis_solicitudes" class="nav-link-custom"><i class="fa-solid fa-folder-open"></i> Mis Solicitudes</a></li>
-                {% endif %}
+                    {% if session.get('usuario_rol') in ['administrative', 'administrativo'] %}
+                        <li><a href="/admin" class="nav-link-custom"><i class="fa-solid fa-sliders"></i> Admin</a></li>
+                        <li><a href="/admin/espacios" class="nav-link-custom"><i class="fa-solid fa-building"></i> Espacios</a></li>
+                    {% endif %}
 
-                <li><a href="/logout" class="outline contrast" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;"><i class="fa-solid fa-right-from-bracket"></i> Salir</a></li>
-            {% else %}
-                <li><a href="/login" role="button"><i class="fa-solid fa-lock"></i> Iniciar Sesión</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+                    {% if session.get('usuario_rol') in ['estudiante', 'student'] %}
+                        <li><a href="/proponer" class="nav-link-custom"><i class="fa-solid fa-lightbulb"></i> Proponer</a></li>
+                        <li><a href="/mis_propuestas" class="nav-link-custom"><i class="fa-solid fa-list-check"></i> Propuestas</a></li>
+                    {% endif %}
+
+                    {% if session.get('usuario_rol') not in ['estudiante', 'student'] %}
+                        <li><a href="/solicitar" class="nav-link-custom"><i class="fa-solid fa-calendar-plus"></i> Registrar Evento</a></li>
+                        <li><a href="/mis_solicitudes" class="nav-link-custom"><i class="fa-solid fa-folder-open"></i> Solicitudes</a></li>
+                    {% endif %}
+
+                    <li><a href="/logout" class="btn-logout nav-link-custom"><i class="fa-solid fa-right-from-bracket"></i> Salir</a></li>
+                {% else %}
+                    <li><a href="/login" class="button" style="padding: 8px 16px;"><i class="fa-solid fa-lock"></i> Iniciar Sesión</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </header>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="container-fluid" style="padding: 0 1.5rem;">
-        
-        <!-- FLASH MESSAGES -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="msg-flash msg-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <main class="container-fluid" style="padding: 0; max-width: 100%;">
 
-        <div class="{% if session.get('usuario_id') %}app-layout{% endif %}">
-            
+        <!-- ALERTAS FLASH -->
+        <div style="max-width: 1400px; margin: 15px auto 0 auto; padding: 0 16px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="msg-flash msg-{{ category }}">
+                            <i class="fa-solid fa-circle-info"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="{% if session.get('usuario_id') %}app-layout{% else %}container{% endif %}" style="{% if not session.get('usuario_id') %}max-width: 500px; margin: 40px auto; padding: 0 16px;{% endif %}">
+
             {% if session.get('usuario_id') %}
-            <!-- BARRA LATERAL -->
+            <!-- BARRA LATERAL (SIDEBAR) -->
             <aside class="sidebar">
-                
+
                 <!-- Perfil Activo -->
                 <div class="card-custom">
-                    <header><i class="fa-solid fa-user-circle"></i> Perfil Activo</header>
-                    <p style="margin-bottom: 4px; font-size: 0.9rem; color: #64748b;">Usuario:</p>
-                    <p style="font-weight: 700; margin-bottom: 12px; color: #0f172a;">{{ session.get('usuario_nombre', 'Usuario') }}</p>
-                    <p style="margin-bottom: 4px; font-size: 0.9rem; color: #64748b;">Rol:</p>
+                    <header><i class="fa-solid fa-id-card"></i> Perfil Activo</header>
+                    <p style="margin-bottom: 2px; font-size: 0.85rem; color: var(--text-muted);">Usuario conectado:</p>
+                    <p style="font-weight: 700; margin-bottom: 10px; color: #0f172a; font-size: 0.95rem;">{{ session.get('usuario_nombre', 'Usuario') }}</p>
+                    <p style="margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Rol de acceso:</p>
                     <span class="badge badge-completado">{{ session.get('usuario_rol', 'Invitado') }}</span>
                 </div>
 
-                <!-- Reloj -->
+                <!-- Reloj del Sistema -->
                 <div class="card-custom">
-                    <header style="text-align: center;"><i class="fa-solid fa-clock"></i> Hora del Sistema</header>
+                    <header style="justify-content: center;"><i class="fa-solid fa-clock"></i> Hora del Sistema</header>
                     <div id="live-clock" class="clock-box">00:00:00</div>
                     <div id="live-date" class="date-box">--/--/----</div>
                 </div>
 
-                <!-- Calendario -->
+                <!-- Consultar Eventos / Calendario -->
                 <div class="card-custom">
-                    <header><i class="fa-solid fa-calendar-days"></i> Calendario</header>
+                    <header><i class="fa-solid fa-calendar-check"></i> Eventos por Fecha</header>
                     <input type="date" id="sidebar-calendar" style="margin-bottom: 0;">
                     <span id="sidebar-calendar-msg" class="calendar-status"></span>
                 </div>
@@ -341,7 +495,7 @@
             </aside>
             {% endif %}
 
-            <!-- SECCIÓN CENTRAL -->
+            <!-- VISTA / CONTENIDO DE LA PÁGINA -->
             <section class="main-content">
                 {% block content %}{% endblock %}
             </section>
@@ -350,11 +504,13 @@
 
     </main>
 
-    <footer class="container-fluid" style="margin-top: 40px; padding: 20px; text-align: center; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-        <small>© 2026 Facultad Experimental de Ciencias y Tecnología (FaCyT-UC) | Sistema de Gestión de Espacios</small>
+    <!-- PIE DE PÁGINA -->
+    <footer style="margin-top: 50px; padding: 20px; text-align: center; color: var(--text-muted); border-top: 1px solid var(--border-color); background: #ffffff;">
+        <small>© 2026 Facultad Experimental de Ciencias y Tecnología (FaCyT - UC)<br>
+        <strong>SGJC</strong> — Sistema para la Gestión de Jornadas Científicas y Eventos Académicos</small>
     </footer>
 
-    <!-- SCRIPT DEL RELOJ Y VERIFICACIÓN DE DÍAS -->
+      <!-- SCRIPT DEL RELOJ Y VERIFICACIÓN -->
     <script>
         function updateClock() {
             const now = new Date();
@@ -398,11 +554,13 @@
                 function verificarDiaOcupado(fechaSeleccionada) {
                     if (!calendarMsg) return;
                     if (diasOcupados.includes(fechaSeleccionada)) {
-                        calendarMsg.style.color = '#e11d48';
-                        calendarMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Día con eventos';
+                        calendarMsg.style.backgroundColor = '#fef2f2';
+                        calendarMsg.style.color = '#dc2626';
+                        calendarMsg.innerHTML = '<i class="fa-solid fa-calendar-xmark"></i> Eventos programados';
                     } else {
-                        calendarMsg.style.color = '#10b981';
-                        calendarMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> Disponible';
+                        calendarMsg.style.backgroundColor = '#f0fdf4';
+                        calendarMsg.style.color = '#166534';
+                        calendarMsg.innerHTML = '<i class="fa-solid fa-circle-check"></i> Sin eventos en agenda';
                     }
                 }
             }
